@@ -1,0 +1,63 @@
+{
+  "schema": "vcri.beacon.evidence-package/v0",
+  "subcriterion": {
+    "key": "tech-1.1a",
+    "title": "Asset inventory and software provenance/SBOM",
+    "rubric": "technology-v1"
+  },
+  "target": "MOCK:sample-node-app",
+  "collector_version": "0.1.0-spike0",
+  "collected_utc": "2026-07-28T18:00:00+00:00",
+  "tool": {
+    "name": "trivy",
+    "mode": "scanner",
+    "raw_sha256": "5e501d0fa29e0324c28b9420c2cf3264a7bea7e25fe71c7fbeb0e0943f23b3c7"
+  },
+  "observation": {
+    "package_inventory": {
+      "present": true,
+      "count": 3
+    },
+    "sbom": {
+      "present": true
+    },
+    "signed_attestation": {
+      "present": false
+    },
+    "results_scanned": 1
+  },
+  "context": [
+    {
+      "type": "note",
+      "text": "IAM is minimal by design \u2014 2-person org, least-privilege overhead exceeds benefit at this scale.",
+      "asserted_utc": "2026-07-28T18:00:00+00:00",
+      "verified": true,
+      "epistemic": "subject_claim"
+    }
+  ],
+  "completeness": {
+    "expected": [
+      "package_inventory",
+      "sbom",
+      "signed_attestation"
+    ],
+    "obtained": [
+      "package_inventory",
+      "sbom"
+    ],
+    "fraction": 0.667,
+    "note": "coverage of THIS package's evidence, not a posture grade"
+  },
+  "freshness": {
+    "collected_utc": "2026-07-28T18:00:00+00:00",
+    "evidence_age_seconds": 0,
+    "note": "live scan = age 0; ingested documents carry the document's own date"
+  },
+  "seal": {
+    "alg": "sha256",
+    "hash": "18d86950f53b36d6103eb79217fce308d1e01f591883b62a42c448653c287835",
+    "note": "score is bound to this hash; edit any field above and verify fails",
+    "signature": "STUB-spike0",
+    "anchor": "STUB-spike0-opentimestamps"
+  }
+}

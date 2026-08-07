@@ -1,0 +1,1 @@
+{"SchemaVersion":2,"Results":[{"Target":"package-lock.json","Type":"npm","Packages":[{"Name":"express","Version":"4.18.2"},{"Name":"lodash","Version":"4.17.21"},{"Name":"axios","Version":"1.6.0"}]}]}

@@ -1,0 +1,59 @@
+# Beacon Collector, Product Spec v0.1
+
+*Cairn Viktor, 2026-07-29. Companion to `EVIDENCE-SCHEMA-and-source-map-v0.1.md` (the data spec). This is the product spec: what the Collector is, what it refuses to be, and what each version milestone means. Attribution where it belongs: the eight Invariants are Joshua's recorded design calls from the 07-28 session; the version definitions and everything else here are mine. (Joshua, 07-29, on being asked to sign off on my own definitions: "You wrote it. It's not mine." Noted, and owned.)*
+
+## One paragraph
+
+The Beacon Collector is an open-source, self-hosted tool that an organization runs against its own systems to **collect, collate, package, seal, and send** security-posture evidence. It never scores. The output is a tamper-evident `vcri.beacon.evidence-package/v0` that the org owns: keep it and self-score with the open scorer, or send it to VCRI escrow where Cairn Risk Co. produces the verified rating and Greeks. The collector is the commodity adoption layer (the 1,000-org goal); the schema is VCRI's open standard (CC-BY); the scoring is CRC's business. Three legs, deliberately separated.
+
+## Invariants (locked, Joshua 2026-07-28; violating any of these is a product bug)
+
+1. **The collector NEVER rates.** No level, no grade, no severity roll-up, no "posture" adjective anywhere in output. It computes only evidence-quality metadata: freshness and completeness.
+2. **Seal = trust anchor.** Every item carries `item_sha256`; the package carries `seal.package_hash`; raw tool output is stored as content-hashed blobs bound by `artifact_ref`. Editing anything breaks verify. (Proven 0.1; re-proven live 0.2.)
+3. **Subject claims are captured, sealed, and labeled.** `context` entries are `verified:false, epistemic:subject_claim`. The open self-scorer ignores them; a human CRC assessor may weigh them; they never auto-adjust anything.
+4. **Org owns the data.** No phone-home. Send is org-initiated, to a destination the org chooses.
+5. **Facts of absence are facts.** A scan that finds nothing reports that honestly; absence-of-evidence routes to completeness, never to a judgment.
+6. **Assembly, not from-scratch.** Open tools (Trivy, Wazuh, osquery, OpenSCAP, Prowler, Garak, eramba) produce the evidence; we produce the mapping, sealing, and packaging. Never build on Security Onion; get Security Onion to EMIT the schema (Doug channel).
+7. **Never roll our own crypto.** Hashing is SHA-256; signing and PQC transport use vetted libraries (liboqs; X25519 + ML-KEM/Kyber FIPS 203; AES-256-GCM payload).
+8. **AI output is a lead, not evidence** (added 07-29, Joshua's Antares call). Bundled models (Cisco Antares, Apache 2.0) run as pre-scan assistants OUTSIDE the sealed chain. If AI inference ever enters a package, it is an explicit `ai-inference` evidence class: model, version, and prompt pinned, marked non-authoritative.
+
+## Version roadmap
+
+Versions are defined by what they PROVE, not what they contain.
+
+### Shipped
+
+- **0.1 (2026-07-28, spike):** proves the seal. Mock Trivy data, one map (1.1a), whole-package hash; editing evidence, metadata, or notes breaks verify.
+- **0.2 (2026-07-29, current):** proves live collection. Full schema shape (subject/collector/items[]/seal), one live Trivy pass producing three mapped items (1.1a inventory/SBOM, 4.4a vuln+fix-availability, 1.1b misconfig), per-item hashes, hashed raw blobs, honest-absence semantics, tamper test demonstrated on a real scan.
+
+### Planned
+
+- **0.3, proves identity — SIGNING CORE SHIPPED 2026-07-29; send-path deferred:** `enroll.py` generates a per-collector Ed25519 identity key, encrypted at rest (scrypt + Fernet, passphrase via BEACON_PASSPHRASE/prompt), with an OOB enrollment token and a local registry stub. `collector.py --sign` signs the package_hash; `verify --registry` checks the signature against the registered key. Proven: valid signed package verifies (exit 0); editing evidence in a signed package is caught (hash mismatch); a forged package (attacker key signing a self-consistent tampered package, spoofing collector id + fingerprint) is caught two ways (registry key mismatch AND InvalidSignature), exit 1. Custody decision recorded (encrypted key file, revisitable). STILL DEFERRED to finish 0.3: hybrid-PQC send channel (X25519 + ML-KEM, needs liboqs) and the real VCRI-side enrollment/registry service (this build uses a local stub). The two trust relationships stay distinct: collector-to-VCRI (enrollment) vs collector-to-target-box (access).
+- **0.4, proves breadth — DOCUMENT COLLECTOR SHIPPED 2026-07-29:** `docs.py` ingests an audit artifact (SOC 2 / pen test), hashes it as a blob, deterministically detects which framework controls it contains (published crosswalk, word-boundary match, reproducible without an LLM), and emits one document-mode evidence item per beacon slot the controls attest to. Proven: a sample SOC 2 lit up 10 slots across all 4 rubrics (technology/people/process/data) from one signed ingest. Epistemic discipline enforced: every item is `epistemic:third_party_attestation, verified_by_collector:false` (the collector verifies the DOCUMENT's integrity, not the auditor's claims). Tamper-proven: fabricated attestation item caught (hash mismatch), corrupted source document caught (blob hash mismatch), and forge defeated via the shared signature path. Also this build: refactored shared trust-math into `beaconlib.py` (one implementation of seal/sign/verify for scanner + document + future export modes); scanner mode regression-passes. MULTI-BOX SHIPPED 2026-07-29 (`merge.py` + `--box` provenance): each item records `provenance.box`; `merge.py` unions per-box packages into one signed aggregate, re-verifying every input item hash first (tampered input refused at merge time), refusing subject mismatch, collapsing byte-identical duplicates while keeping different-box variants of the same slot. Proven: 2 boxes -> 6 items -> 1 signed package, provenance survives, verify passes. 0.4 now covers depth (scanner), breadth (document), and estate (multi-box). STILL OPTIONAL/DEFERRED for 0.4: LLM-assisted extraction (labeled as parse, never as attestation), export-mode adapters (that is 0.6).
+- **0.5, proves PILOT-READY (proposed definition):** a real external org, not us, runs the collector end-to-end unassisted: install, enroll, collect (scanner + document modes, at least two boxes), review, seal, send to escrow, and CRC can score what arrives. Wazuh SCA adapter replaces trivy-misconfig as the real 1.1b/config source. Minimal review UI (aggregate, review, package, send). Success = one pilot org's sealed package scored by CRC with zero collector-side hand-holding. This is the version the Sherri bar ("fully vetted, managed, verified") starts being testable against.
+- **0.6, proves people and process — EXPORT MODE STARTED 2026-07-29 (`exportmode.py`, IdP adapter):** ingests an IdP user export and emits OBSERVED facts (epistemic=observed_export) for people-v1:mfa (coverage fraction + named accounts without MFA), people-v1:least-privilege (privileged ratio), people-v1:jml (disabled-still-present hygiene). Signed, tamper-proven (a forged 100%-MFA claim is caught). **Killer demonstration proven:** on the same slot people-v1:mfa, the SOC 2 (document mode) ATTESTS "MFA enforced, no exceptions" while the IdP export (export mode) OBSERVES 4/6 = 67% with two named accounts lacking it. Same slot, two evidence classes, and the observed fact CONTRADICTS the attestation. That is the whole depth-beats-breadth thesis in one screen, and a strong show/blog demo. STILL OPEN for 0.6: IGA (access reviews), PAM (privileged), ITSM (change tickets) adapters; a 0.6 package spanning 3+ rubrics from real exports.
+- **0.7, proves time:** posture becomes a series, not a snapshot. Scheduled re-collection; freshness decay surfaced per item (evidence_age matters once collections repeat); package DIFFING (what changed since the last seal, itself sealed); collection history retained locally, org-owned like everything else. A 0.7 org can show a buyer "here is our March package, our June package, and the signed delta."
+- **0.8, proves the modern estate:** cloud and AI surfaces. Prowler adapter (cloud posture), osquery adapter (fleet inventory, replaces trivy-only inventory on hosts), Garak adapter (the AI/cogsec rubric gets its first scanner-mode evidence: prompt-injection and red-team results as observed facts). Multi-collector merge: one org, several collectors (DC, cloud, office), one aggregated package with per-collector provenance.
+- **0.9, proves consumption (release candidate):** the other side of the schema exists. Open self-scorer reference implementation reads a package and produces the free-tier score (proving the schema is scoreable without CRC); Antares pre-scan assistant bundled per invariant 8 (Apache 2.0, outside the sealed chain); hardening pass: verifier fuzzed, threat-model doc published, external crypto review SCHEDULED. Everything 1.0 requires exists in draft at 0.9.
+- **1.0, proves the STANDARD (proposed definition, deliberately hard):**
+  1. Schema frozen as `evidence-package/v1`, published CC-BY under VCRI with a versioning policy.
+  2. **At least one implementation we do not control emits it** (the Doug/Security Onion posture-export is the named target; any independent emitter counts).
+  3. Enrollment/registry service in production at VCRI; signing verified end-to-end.
+  4. Three or more external orgs have completed collect-seal-send-score in production, at least one at the anchor-candidate tier.
+  5. Crypto design externally reviewed (counsel-blessed reviewer; never self-certified).
+  6. Tamper test suite runs in CI: every release must fail-on-fudge before it ships.
+  1.0 is not "lots of adapters." It is "the schema outlived its first author": someone else emits it, someone else consumes it, and the seal survives adversarial review.
+
+## Non-goals (standing)
+
+- Scoring, grading, benchmarking, or any posture adjective (that is the scorer/CRC).
+- Continuous monitoring / agent-resident daemon (Wazuh exists; we consume, not compete).
+- A SaaS collector (self-hosted is the trust story; VCRI hosts only enrollment/escrow/scoring).
+- Building on Security Onion, BitSight-style outside-in scanning, or questionnaire workflows.
+
+## Open items (dated)
+
+- Antares archive copy: blocked on HF auth (gated repos 401 anonymous); one-time Joshua token or a Cairn HF account. (07-29)
+- Signing-key custody design for 0.3: per-collector key storage (TPM? keychain? file+passphrase?) needs a decision before code. (07-29)
+- Whether `freshness` gets a package-level roll-up or stays per-item only. (07-29)
+- 0.5 pilot org candidate list: pick from CRC pipeline once 0.3 signs packages. (07-29)
