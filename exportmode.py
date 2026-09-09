@@ -163,7 +163,33 @@ def collect(args):
 def verify(args):
     pkg = json.load(open(args.package))
     blob_dir = args.blobs or os.path.join(os.path.dirname(os.path.abspath(args.package)), "blobs")
-    ok = bl.verify_package(pkg, blob_dir=blob_dir, registry=args.registry)
+    ok = bl.verify_package(pkg, blob_dir=blob_dir, registry=args.registry,
+                           withheld=args.withheld)
+    sys.exit(0 if ok else 1)
+
+
+def disclose(args):
+    """Emit a bundle proving ONE item, for a recipient who gets nothing else."""
+    pkg = json.load(open(args.package))
+    blob_dir = args.blobs or os.path.join(os.path.dirname(os.path.abspath(args.package)), "blobs")
+    bundle = bl.build_disclosure(pkg, args.index,
+                                 include_item=not args.hash_only,
+                                 blob_dir=blob_dir,
+                                 include_blob=args.with_artifact)
+    out = json.dumps(bundle, indent=2)
+    if args.out:
+        with open(args.out, "w") as f:
+            f.write(out + "\n")
+        full = os.path.getsize(args.package)
+        print("wrote %s (%d bytes) proving item %d of %d; the full package is %d bytes" % (
+            args.out, len(out), args.index, bundle["header"]["item_count"], full))
+    else:
+        print(out)
+
+
+def verify_disclosure(args):
+    bundle = json.load(open(args.bundle))
+    ok = bl.verify_disclosure(bundle, registry=args.registry)
     sys.exit(0 if ok else 1)
 
 
@@ -182,5 +208,24 @@ if __name__ == "__main__":
     v.add_argument("package")
     v.add_argument("--registry")
     v.add_argument("--blobs")
+    v.add_argument("--withheld", action="append", metavar="RAW_SHA256",
+                   help="declare a raw artifact as deliberately withheld; repeatable. "
+                        "Declared-absent verifies as partial disclosure, undeclared-absent still rejects.")
+
+    d = sub.add_parser("disclose", help="prove one item to someone who gets nothing else")
+    d.add_argument("package")
+    d.add_argument("--index", type=int, required=True, help="item index to prove")
+    d.add_argument("--out", help="write the bundle here instead of stdout")
+    d.add_argument("--blobs")
+    d.add_argument("--hash-only", action="store_true",
+                   help="prove the item exists without disclosing the item body")
+    d.add_argument("--with-artifact", action="store_true",
+                   help="also mark the raw artifact as disclosed")
+
+    vd = sub.add_parser("verify-disclosure", help="check a one-item bundle without the package")
+    vd.add_argument("bundle")
+    vd.add_argument("--registry")
+
     a = ap.parse_args()
-    (collect if a.cmd == "collect" else verify)(a)
+    {"collect": collect, "verify": verify,
+     "disclose": disclose, "verify-disclosure": verify_disclosure}[a.cmd](a)

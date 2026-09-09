@@ -1,0 +1,9 @@
+.git
+out
+beacon-home
+*.md
+sample-trivy.json
+faked.json
+__pycache__
+*.pyc
+.DS_Store

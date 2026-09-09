@@ -2,3 +2,10 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
+
+# local backups and internal planning, never published
+*.bak-*
+*.pre-*
+*-DECISION.md
+*-MVP-PLAN.md
+out/

@@ -1,0 +1,7 @@
+# Beacon Collector runtime dependency (the only third-party import in the codebase).
+# Pinned to a range; lock exactly in CI before release.
+cryptography>=42,<51
+# NOTE 2026-09-09: the production venv (~/.beacon/venv, used by the launchd jobs)
+# carries 50.0.0, which the previous <46 ceiling excluded. Range widened to match
+# what actually runs. Only Ed25519PublicKey and InvalidSignature are used, both
+# stable across this range. Lock exactly in CI before release.

@@ -1,0 +1,31 @@
+# Beacon Collector — dogfood on a box (JawnCon deployment).
+# One command:  docker compose run --rm collector
+#
+# The host filesystem is mounted READ-ONLY at /host so the collector can observe
+# the box's real posture without the power to change it. Sealed evidence lands in
+# ./out on the box. No ports are published: the collector never listens.
+
+services:
+  collector:
+    build:
+      context: .
+      # Pin/verify TRIVY_VERSION against a current release before building.
+      args:
+        TRIVY_VERSION: "0.58.1"
+    image: beacon-collector:dogfood
+    # No `ports:` on purpose. Outbound-only tool; nothing to expose.
+    read_only: true              # container FS is read-only; only the volumes below are writable
+    tmpfs:
+      - /tmp                     # Trivy scratch space
+    cap_drop:
+      - ALL                      # drop all Linux capabilities; posture reading needs none
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      BEACON_BOX: "${BEACON_BOX:-jawncon-box}"
+      BEACON_SIGN: "${BEACON_SIGN:-0}"
+    volumes:
+      - "/:/host:ro"             # the box's own filesystem, read-only
+      - "./out:/out"             # sealed packages persist here, org-owned
+      # To sign, also mount an enrolled key dir read-only and set BEACON_SIGN=1:
+      # - "./beacon-home:/home/beacon/.beacon:ro"
