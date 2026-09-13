@@ -44,6 +44,28 @@ It is **not** a vendor assessment. A single box has no vendors; "the box assessi
 mechanics demo. The value here is adoption (grab the repo, run it yourself) and validation (it
 runs in the wild), not the telemetry from a conference box.
 
+## Quick start for an organization (not the dogfood)
+
+```bash
+git clone https://github.com/Cairn-works/beacon-collector && cd beacon-collector
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+make test                                   # the tamper suites must pass on your box
+
+python enroll.py                            # one-time identity key (anti-forge), kept by you
+python collector.py collect --target / --subject "Acme" --box web-1 --sign --out-dir out/hosts
+python exportmode.py collect --export okta-users.json --source idp --subject "Acme" --sign --out-dir out/idp
+python docs.py collect --doc soc2-2026.txt --doc-type soc2 --subject "Acme" --sign --out-dir out/soc2
+python merge.py --out-dir out/acme --sign out/hosts/package.json out/idp/package.json out/soc2/package.json
+
+python anchor.py verify out/acme/package.json     # RFC 3161 token + OTS proof, offline
+python score.py out/acme/package.json             # the free-tier score, work shown
+```
+
+Every `collect` seals and anchors at write time. Nothing is sent anywhere. To make it a
+series, put the same three commands in `deploy/beacon-schedule.example.json` and install
+one of the `deploy/` timers; `scheduled.py verify` then checks every seal, chain link and
+anchor in the history. Sending to VCRI escrow (`send.py`) is the part not yet finished.
+
 ## Anchoring (what "sealed and anchored" means, as of 2026-09-12)
 
 Every org mode (scanner, document, export, merge) anchors the package it just sealed

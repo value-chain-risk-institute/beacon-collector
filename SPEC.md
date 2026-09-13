@@ -60,6 +60,12 @@ FIXED the same night (09-12, ~20:00 EDT): anchoring on the ORG package path. `be
 
 ## Open items (dated)
 
+- (09-12) **Rekor gate.** Publishing epoch roots (household) and per-package hashes (orgs) to the public transparency log is a one-way door that binds the signing key to a public record forever. Off by design; Joshua's call to enable, and per-package Rekor for org packages is unimplemented until the v2 hashedrekord digest/signature semantics are exercised live.
+- (09-12) **`process-v1:incident-response` has no rubric home.** SOC 2 CC7.3/CC7.4 map to it; processes-v1 has no incident-response subcriterion; technology-v1 6b is incident detection and response on systems. Methodology decision (VCRI): add a processes-v1 subcriterion, or re-point the crosswalk to technology-v1:6.6b. The scorer prints it as a gap until then.
+- (09-12) **Slot ids vs rubric keys.** The collector says `technology-v1:1.1a` and `process-v1:*`; the rubric says `1a` and `processes-v1`. The evidence map absorbs it; a v1 schema freeze should pick one spelling.
+- (09-12) **Push and first tag.** Five commits are local only. A push plus a `v0.7.0` tag exercises CI, builds and signs the image on GHCR. Joshua's call to push.
+- (09-12) **Evidence map v0 is a proposal.** Every threshold in `scorer-evidence-map-v0.json` is Cairn's first draft, written so it can be argued with. VCRI's change log ratifies or replaces them.
+
 - Antares archive copy: blocked on HF auth (gated repos 401 anonymous); one-time Joshua token or a Cairn HF account. (07-29)
 - Signing-key custody design for 0.3: per-collector key storage (TPM? keychain? file+passphrase?) needs a decision before code. (07-29)
 - Whether `freshness` gets a package-level roll-up or stays per-item only. (07-29)

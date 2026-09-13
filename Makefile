@@ -10,6 +10,8 @@ test: compile
 	$(PY) test_merkle.py
 	$(PY) test_disclosure.py
 	$(PY) test_anchor.py
+	$(PY) test_score.py
+	$(PY) test_scheduled.py
 
 build:
 	docker build -t beacon-collector:dogfood .
