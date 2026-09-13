@@ -1,7 +1,10 @@
-# Beacon Collector runtime dependency (the only third-party import in the codebase).
-# Pinned to a range; lock exactly in CI before release.
+# Beacon Collector runtime dependencies. Lock exactly in CI before release.
+# Seal/sign/verify:
 cryptography>=42,<51
-# NOTE 2026-09-09: the production venv (~/.beacon/venv, used by the launchd jobs)
-# carries 50.0.0, which the previous <46 ceiling excluded. Range widened to match
-# what actually runs. Only Ed25519PublicKey and InvalidSignature are used, both
-# stable across this range. Lock exactly in CI before release.
+# Anchoring (RFC 3161 timestamp + OpenTimestamps). Added to the manifest 2026-09-12;
+# they were already imported by anchors.py and installed in the production venv
+# (httpx 0.28.1, rfc3161-client 1.0.8, opentimestamps-client 0.7.2) but undeclared,
+# so a fresh install could seal and could not anchor.
+httpx>=0.27,<1
+rfc3161-client>=1.0,<2
+opentimestamps-client>=0.7,<1

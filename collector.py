@@ -189,6 +189,7 @@ def collect(args):
     out_path = os.path.join(args.out_dir, "package.json")
     with open(out_path, "w") as f:
         f.write(json.dumps(package, indent=2))
+    bl.anchor_after_write(out_path, sealed_utc=now, home=args.home, enabled=not args.no_anchor)
 
     print("sealed evidence package -> " + out_path)
     for it in items:
@@ -218,6 +219,7 @@ def main():
     c.add_argument("--out-dir", default="out")
     c.add_argument("--box", help="label for the box this evidence is from (per-item provenance in a multi-box estate)")
     c.add_argument("--sign", action="store_true", help="sign with the enrolled identity key")
+    c.add_argument("--no-anchor", action="store_true", help="seal only; do not timestamp/anchor the package (state recorded as unanchored)")
     c.add_argument("--home", default=os.path.expanduser("~/.beacon"), help="enrollment home")
     v = sub.add_parser("verify")
     v.add_argument("package")

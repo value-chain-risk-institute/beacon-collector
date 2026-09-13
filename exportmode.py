@@ -145,6 +145,7 @@ def collect(args):
     out_path = os.path.join(args.out_dir, "package.json")
     with open(out_path, "w") as f:
         f.write(json.dumps(package, indent=2))
+    bl.anchor_after_write(out_path, sealed_utc=subject.get("collected_utc"), home=args.home, enabled=not args.no_anchor)
 
     mfa = observations["people-v1:mfa"]
     lp = observations["people-v1:least-privilege"]
@@ -202,6 +203,7 @@ if __name__ == "__main__":
     c.add_argument("--subject")
     c.add_argument("--box")
     c.add_argument("--sign", action="store_true")
+    c.add_argument("--no-anchor", action="store_true", help="seal only; do not timestamp/anchor the package (state recorded as unanchored)")
     c.add_argument("--home", default=os.path.expanduser("~/.beacon"))
     c.add_argument("--out-dir", default="out-export")
     v = sub.add_parser("verify")

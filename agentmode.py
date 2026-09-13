@@ -855,25 +855,13 @@ def cmd_anchor(args):
         rec_path = pkg_path + ".anchors.json"
         if os.path.isfile(tsr_path):
             continue
-        with open(pkg_path, "rb") as f:
-            body = f.read()
-        try:
-            token, meta = an.tsa_timestamp(body)
-        except Exception as e:
-            print("  tsa failed for seq %s: %s" % (pkg["chain"]["sequence"], type(e).__name__))
-            continue
-        # A token obtained after the fact is NOT a seal-time attestation. Say so
-        # in the record rather than letting the two timestamps quietly disagree.
         sealed_at = pkg.get("subject", {}).get("collected_utc")
-        if sealed_at and meta["observed_time"][:19] > sealed_at[:19]:
-            meta["late_anchor"] = True
-            meta["sealed_utc"] = sealed_at
-            meta["note"] = ("token obtained after sealing; it attests when the anchor was "
-                            "taken, not when the package was sealed")
+        token, meta = an.rfc3161_anchor_file(pkg_path, sealed_at)
+        if token is None:
+            print("  tsa failed for seq %s: %s" % (pkg["chain"]["sequence"], meta.get("error", "")[:80]))
+            continue
+        if meta.get("late_anchor"):
             late += 1
-        with open(tsr_path, "wb") as f:
-            f.write(token)
-        meta["artifact"] = os.path.basename(tsr_path)
         rec = load_json(rec_path) or {"package_hash": pkg["seal"]["package_hash"], "anchors": []}
         rec["anchors"] = [a for a in rec["anchors"] if a.get("kind") != "rfc3161"] + [meta]
         with open(rec_path, "w") as f:

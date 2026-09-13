@@ -13,7 +13,7 @@ ARG TRIVY_VERSION=0.58.1
 # System layer: install Trivy (the only external tool the collector shells out to),
 # then remove the tooling used to fetch it. No daemons, no services.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates \
+ && apt-get install -y --no-install-recommends curl ca-certificates openssl \
  && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
       | sh -s -- -b /usr/local/bin "v${TRIVY_VERSION}" \
  && apt-get purge -y curl \
@@ -27,6 +27,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Collector source. Copy the modules explicitly so image contents are auditable.
 COPY *.py /app/
+# TSA trust chain, so `anchor.py verify` works offline inside the image.
+COPY anchor-trust /app/anchor-trust
 COPY dogfood.sh /app/dogfood.sh
 RUN chmod +x /app/dogfood.sh
 

@@ -142,6 +142,7 @@ def collect(args):
     import json
     with open(out_path, "w") as f:
         f.write(json.dumps(package, indent=2))
+    bl.anchor_after_write(out_path, sealed_utc=subject.get("collected_utc"), home=args.home, enabled=not args.no_anchor)
 
     rubrics = sorted({it["subcriterion"].split(":")[0] for it in items})
     print("ingested %s (%s), sha256 %s..." % (os.path.basename(args.doc), doc_type, doc_hash[:12]))
@@ -170,6 +171,7 @@ if __name__ == "__main__":
     c.add_argument("--doc-type", required=True)
     c.add_argument("--subject")
     c.add_argument("--sign", action="store_true")
+    c.add_argument("--no-anchor", action="store_true", help="seal only; do not timestamp/anchor the package (state recorded as unanchored)")
     c.add_argument("--home", default=os.path.expanduser("~/.beacon"))
     c.add_argument("--out-dir", default="out-docs")
     v = sub.add_parser("verify")

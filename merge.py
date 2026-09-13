@@ -91,6 +91,7 @@ def merge(args):
     out_path = os.path.join(args.out_dir, "package.json")
     with open(out_path, "w") as f:
         f.write(json.dumps(package, indent=2))
+    bl.anchor_after_write(out_path, sealed_utc=subject.get("collected_utc"), home=args.home, enabled=not args.no_anchor)
 
     # per-box coverage summary (facts, not a score)
     by_box = {}
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     ap.add_argument("packages", nargs="+", help="single-box package.json files to merge")
     ap.add_argument("--out-dir", default="merged")
     ap.add_argument("--sign", action="store_true")
+    ap.add_argument("--no-anchor", action="store_true", help="seal only; do not timestamp/anchor the package (state recorded as unanchored)")
     ap.add_argument("--home", default=os.path.expanduser("~/.beacon"))
     a = ap.parse_args()
     merge(a)

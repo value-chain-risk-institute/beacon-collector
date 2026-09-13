@@ -44,6 +44,28 @@ It is **not** a vendor assessment. A single box has no vendors; "the box assessi
 mechanics demo. The value here is adoption (grab the repo, run it yourself) and validation (it
 runs in the wild), not the telemetry from a conference box.
 
+## Anchoring (what "sealed and anchored" means, as of 2026-09-12)
+
+Every org mode (scanner, document, export, merge) anchors the package it just sealed
+unless you pass `--no-anchor`. Anchoring is out of band: the seal is complete before
+any anchor is attempted, an anchor service being down never stops a collection, and
+the record says exactly what was and was not obtained. Beside `package.json` you get:
+
+- `package.json.tsr`: an RFC 3161 timestamp token over the package bytes from an
+  independent timestamp authority (freetsa.org). Verify with stock OpenSSL and the
+  trust chain shipped in `anchor-trust/`:
+  `openssl ts -verify -in package.json.tsr -data package.json -CAfile anchor-trust/freetsa-cacert.pem -untrusted anchor-trust/freetsa-tsa.crt`
+- `package.json.ots`: an OpenTimestamps proof. It is `submitted` until a Bitcoin block
+  includes it; run `anchor.py upgrade package.json` later (hours) to make the proof
+  self-contained, then `ots verify package.json.ots`.
+- `package.json.anchors.json`: the honest record. States are `pending`, `submitted`,
+  `confirmed`, `failed`, never overstated. A token taken more than 60 s after sealing
+  is marked `late_anchor` with the gap in seconds.
+
+`anchor.py verify package.json` checks all of the above offline, the way a third party
+would months later. Rekor (public transparency log) is gated off by default because a
+Rekor entry is permanent and public; the record says so rather than pretending.
+
 ## Security posture (why a public IP is fine)
 
 **The collector is outbound-only. It opens no listening ports.** `collect` shells out to Trivy
@@ -65,7 +87,7 @@ does not need:
 `collector.py` scanner mode (Trivy) · `docs.py` document mode (SOC 2 / pen-test ingest) ·
 `exportmode.py` export mode (IdP) · `enroll.py` Ed25519 identity + signing · `merge.py`
 multi-box aggregation · `beaconlib.py` shared seal/sign/verify · `report.py` local report ·
-`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP).
+`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP) · `anchors.py` + `anchor.py` timestamp/OTS/Rekor anchoring and offline verify.
 
 `SPEC.md` product spec + invariants · `EVIDENCE-SCHEMA-and-source-map-v0.1.md` data spec ·
 `JAWNCON-MVP-PLAN.md` the deployment plan.

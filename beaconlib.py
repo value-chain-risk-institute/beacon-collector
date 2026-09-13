@@ -93,7 +93,11 @@ def seal_and_sign(core: dict, sign: bool, home: str) -> dict:
             "merkle_root": root,
             "merkle_alg": "rfc6962-sha256/promote-odd",
             "header_sha256": header_hash,
-            "anchor": "STUB-opentimestamps",
+            # Anchoring is out of band and recorded in a sidecar; the seal itself only
+            # says where to look. It never claims an anchor it does not have.
+            "anchor": {"state": "unanchored", "record": "package.json.anchors.json",
+                       "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, "
+                               "<pkg>.anchors.json); run `anchor.py verify` to check them"},
             "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; "
                     "edit anything above and verify fails"}
     if sign:
@@ -356,3 +360,23 @@ def verify_disclosure(bundle: dict, registry: str = None) -> bool:
     else:
         print("REJECT this disclosure.")
     return ok and not unverifiable
+
+
+def anchor_after_write(out_path: str, sealed_utc: str = None, home: str = None,
+                       enabled: bool = True) -> None:
+    """Anchor a just-written package. Shared by every org mode so the promise
+    "sealed and anchored" is kept by one code path. Failure to anchor is printed
+    and recorded, never raised: the package on disk is already sealed."""
+    if not enabled:
+        print("  anchoring skipped (--no-anchor); seal.anchor.state stays 'unanchored'")
+        return
+    try:
+        import anchors as an
+        rec = an.anchor_package(out_path, sealed_utc=sealed_utc, home=home)
+    except Exception as e:  # anchoring must never take the collector down
+        print("  anchoring FAILED to run (%s: %s); package is sealed but unanchored"
+              % (type(e).__name__, str(e)[:120]))
+        return
+    for a in rec.get("anchors", []):
+        extra = a.get("substate") or a.get("reason") or a.get("error") or ""
+        print("  anchor %-14s %s%s" % (a.get("kind"), a.get("state"), (" (%s)" % extra[:90]) if extra else ""))

@@ -43,7 +43,20 @@ import subprocess
 
 H = os.path.expanduser
 
-TRUST_DIR = H("~/.beacon/anchor-trust")
+def _resolve_trust_dir():
+    """Where the TSA trust chain lives. Operator override first, then the
+    per-machine home, then the copy shipped in the repo so a fresh org install
+    can verify tokens without a separate download step."""
+    env = os.environ.get("BEACON_TRUST_DIR")
+    if env:
+        return H(env)
+    home = H("~/.beacon/anchor-trust")
+    if os.path.isfile(os.path.join(home, "freetsa-cacert.pem")):
+        return home
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "anchor-trust")
+
+
+TRUST_DIR = _resolve_trust_dir()
 ANCHOR_DIR = H("~/.beacon/agent/anchors")
 QUEUE_PATH = os.path.join(ANCHOR_DIR, "queue.json")
 
@@ -327,3 +340,201 @@ def due(entry, now_epoch):
         return True
     wait = RETRY_SCHEDULE[min(attempts - 1, len(RETRY_SCHEDULE) - 1)]
     return now_epoch - entry.get("last_attempt_epoch", 0) >= wait
+
+
+# ---------------------------------------------------------------- per-package
+# One implementation of "anchor this sealed package", shared by agent mode and
+# by the org modes (scanner, document, export, merge). Added 2026-09-12: until
+# then only agent mode anchored anything, and org packages carried a literal
+# stub in seal.anchor while the README said "sealed and anchored".
+#
+# Same two invariants as the top of this file: sealing has already happened by
+# the time this runs and is never undone by an anchoring failure; and the
+# sidecar record says exactly what was and was not obtained.
+
+
+def _load_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def record_path(pkg_path):
+    return pkg_path + ".anchors.json"
+
+
+LATE_ANCHOR_TOLERANCE_SECONDS = 60
+
+
+def _seconds_between(earlier_iso, later_iso):
+    """Signed seconds from earlier to later; None if either stamp is unparseable.
+    Naive stamps are read as UTC, which is what every writer in this tree emits."""
+    try:
+        a = datetime.datetime.fromisoformat(earlier_iso.replace("Z", "+00:00"))
+        b = datetime.datetime.fromisoformat(later_iso.replace("Z", "+00:00"))
+        if a.tzinfo is None:
+            a = a.replace(tzinfo=datetime.timezone.utc)
+        if b.tzinfo is None:
+            b = b.replace(tzinfo=datetime.timezone.utc)
+        return round((b - a).total_seconds(), 3)
+    except (ValueError, AttributeError, TypeError):
+        return None
+
+
+def rfc3161_anchor_file(pkg_path, sealed_utc=None, timeout=30):
+    """Timestamp the package bytes with the TSA. Returns (token_bytes|None, meta).
+    A token taken after sealing is recorded as late_anchor rather than allowed
+    to disagree quietly with the seal time."""
+    with open(pkg_path, "rb") as f:
+        body = f.read()
+    try:
+        token, meta = tsa_timestamp(body, timeout=timeout)
+    except Exception as e:
+        return None, {"kind": "rfc3161", "authority": TSA_NAME, "state": "pending",
+                      "error": "%s: %s" % (type(e).__name__, str(e)[:160]),
+                      "last_attempt": utcnow()}
+    # How long after sealing was the token taken? At-write anchoring lands within
+    # a second or two and is recorded as such; a token taken later than
+    # LATE_ANCHOR_TOLERANCE_SECONDS (an hourly job, a manual retry) is flagged
+    # late so the two timestamps never quietly disagree.
+    if sealed_utc:
+        delta = _seconds_between(sealed_utc, meta["observed_time"])
+        meta["sealed_utc"] = sealed_utc
+        meta["seconds_after_seal"] = delta
+        if delta is not None and delta > LATE_ANCHOR_TOLERANCE_SECONDS:
+            meta["late_anchor"] = True
+            meta["note"] = ("token obtained after sealing; it attests when the anchor was "
+                            "taken, not when the package was sealed")
+    tsr_path = pkg_path + ".tsr"
+    with open(tsr_path, "wb") as f:
+        f.write(token)
+    meta["artifact"] = os.path.basename(tsr_path)
+    return token, meta
+
+
+def _merge_anchor(rec, meta):
+    rec["anchors"] = [a for a in rec.get("anchors", []) if a.get("kind") != meta["kind"]] + [meta]
+
+
+def anchor_package(pkg_path, sealed_utc=None, home=None, do_ots=True, do_rekor=True,
+                   tsa_timeout=30, ots_timeout=60):
+    """Anchor one sealed org package in place. Writes <pkg>.tsr, <pkg>.ots and
+    the sidecar <pkg>.anchors.json. Never raises on anchor failure; the record
+    carries the failure. Returns the record."""
+    pkg = _load_json(pkg_path) or {}
+    package_hash = (pkg.get("seal") or {}).get("package_hash")
+    rec = _load_json(record_path(pkg_path)) or {"package_hash": package_hash, "anchors": []}
+    if package_hash and rec.get("package_hash") not in (None, package_hash):
+        # The sidecar belongs to a different package body. Refuse to mix them.
+        rec = {"package_hash": package_hash, "anchors": [],
+               "note": "previous sidecar discarded: package_hash changed"}
+    rec["package_hash"] = package_hash
+    rec["anchored_by"] = "beacon anchors.anchor_package"
+    rec["last_run"] = utcnow()
+
+    # 1. RFC 3161, synchronous, the anchor a court already understands.
+    if not os.path.isfile(pkg_path + ".tsr"):
+        _, meta = rfc3161_anchor_file(pkg_path, sealed_utc, timeout=tsa_timeout)
+        _merge_anchor(rec, meta)
+
+    # 2. OpenTimestamps on the package file itself. For org packages we stamp
+    #    per package rather than per epoch: an org seals a handful of packages,
+    #    not one every fifteen minutes, and a per-file proof is what a third
+    #    party can check with the stock `ots verify` command. The calendars
+    #    aggregate on their side. Result is SUBMITTED until `upgrade` pulls the
+    #    Bitcoin path down; see ots_stamp for why it is not called confirmed.
+    if do_ots:
+        existing = [a for a in rec["anchors"] if a.get("kind") == "opentimestamps"]
+        if not os.path.isfile(pkg_path + ".ots") or not existing:
+            try:
+                _, meta = ots_stamp(pkg_path, timeout=ots_timeout)
+            except Exception as e:
+                meta = {"kind": "opentimestamps", "authority": "bitcoin", "state": "pending",
+                        "error": "%s: %s" % (type(e).__name__, str(e)[:160]),
+                        "last_attempt": utcnow()}
+            _merge_anchor(rec, meta)
+
+    # 3. Rekor. Gated by the operator flag exactly as in agent mode, and for org
+    #    packages ALSO held until the digest/signature semantics of the v2
+    #    hashedrekord entry have been exercised live (never has been: the flag
+    #    has never been set). Recorded honestly as pending with the reason.
+    if do_rekor:
+        if not rekor_enabled():
+            _merge_anchor(rec, {"kind": "rekor-v2", "authority": REKOR_LOG, "state": "pending",
+                                "reason": "rekor publication not enabled on this collector; "
+                                          "create %s to enable" % REKOR_ENABLED_FLAG})
+        else:
+            _merge_anchor(rec, {"kind": "rekor-v2", "authority": REKOR_LOG, "state": "pending",
+                                "reason": "per-package rekor publication not yet implemented for "
+                                          "org packages (2026-09-12); epoch publication lives in "
+                                          "agent mode"})
+
+    with open(record_path(pkg_path), "w") as f:
+        json.dump(rec, f, indent=2)
+    return rec
+
+
+def upgrade_package_anchors(pkg_path, timeout=180):
+    """Pull the Bitcoin path down for a per-package OTS proof; idempotent."""
+    rec = _load_json(record_path(pkg_path))
+    proof = pkg_path + ".ots"
+    if not rec or not os.path.isfile(proof):
+        return False, rec
+    for a in rec.get("anchors", []):
+        if a.get("kind") == "opentimestamps" and a.get("state") != "confirmed":
+            ok, meta = ots_upgrade(proof, timeout=timeout)
+            a.update(meta)
+            with open(record_path(pkg_path), "w") as f:
+                json.dump(rec, f, indent=2)
+            return ok, rec
+    return True, rec
+
+
+def verify_package_anchors(pkg_path):
+    """Offline check of whatever anchors exist for one package, the way a
+    third party would do it later. Returns (ok, findings). A missing anchor
+    is a finding, not a failure: 'unanchored' is a truthful state."""
+    findings = []
+    ok = True
+    rec = _load_json(record_path(pkg_path))
+    pkg = _load_json(pkg_path) or {}
+    package_hash = (pkg.get("seal") or {}).get("package_hash")
+    if rec is None:
+        findings.append(("unanchored", "no sidecar record; package has never been anchored"))
+        return ok, findings
+    if package_hash and rec.get("package_hash") != package_hash:
+        findings.append(("MISMATCH", "sidecar package_hash differs from the package's seal"))
+        ok = False
+    tsr = pkg_path + ".tsr"
+    if os.path.isfile(tsr):
+        r = subprocess.run(["openssl", "ts", "-verify", "-in", tsr, "-data", pkg_path,
+                            "-CAfile", os.path.join(TRUST_DIR, "freetsa-cacert.pem"),
+                            "-untrusted", os.path.join(TRUST_DIR, "freetsa-tsa.crt")],
+                           capture_output=True, text=True)
+        good = "Verification: OK" in (r.stdout + r.stderr)
+        findings.append(("rfc3161", "token verifies offline against %s" % TRUST_DIR if good
+                         else "TOKEN FAILED VERIFICATION: %s" % (r.stderr or r.stdout).strip()[:200]))
+        ok = ok and good
+    else:
+        findings.append(("rfc3161", "no token on disk"))
+    proof = pkg_path + ".ots"
+    if os.path.isfile(proof):
+        v = subprocess.run([_ots_bin(), "--no-bitcoin", "verify", proof],
+                           capture_output=True, text=True)
+        blob = (v.stdout or "") + (v.stderr or "")
+        if re.search(r"Bitcoin block (\d+)", blob) and "Pending confirmation" not in blob:
+            findings.append(("opentimestamps", "proof self-contained: %s" %
+                             re.search(r"Bitcoin block \d+", blob).group(0)))
+        elif "Pending confirmation" in blob:
+            findings.append(("opentimestamps", "proof present, awaiting Bitcoin confirmation (run upgrade later)"))
+        else:
+            findings.append(("opentimestamps", "PROOF DID NOT VERIFY: %s" % blob.strip()[:200]))
+            ok = False
+    else:
+        findings.append(("opentimestamps", "no proof on disk"))
+    for a in rec.get("anchors", []):
+        if a.get("kind") == "rekor-v2":
+            findings.append(("rekor-v2", a.get("state") + (": " + a["reason"] if a.get("reason") else "")))
+    return ok, findings
