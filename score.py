@@ -131,7 +131,15 @@ def score_package(pkg, rubrics, emap):
             continue
         cls = item_class(item, emap)
         cap = caps.get(cls, 0)
-        raw, why = apply_rule(spec["rule"], item.get("observation", {}), emap)
+        rule = spec["rule"]
+        obs = item.get("observation", {})
+        if cls == "attested" and get_path(obs, "attested.present") is not None:
+            # An attestation is an attestation whatever the slot's observed-evidence
+            # rule expects: a SOC 2 saying "MFA enforced" scores as attested (cap 2)
+            # on the MFA subcriterion; it does not become unscorable because the
+            # slot's rule wants a coverage fraction that a document never carries.
+            rule = {"type": "attested_present"}
+        raw, why = apply_rule(rule, obs, emap)
         level = None if raw is None else min(raw, cap)
         rec = {"slot": slot, "class": cls, "cap": cap, "raw_level": raw, "level": level,
                "why": why, "mode": item.get("mode"), "collected_utc": item.get("collected_utc"),

@@ -72,11 +72,11 @@ def main():
     print("evidence class is the ceiling")
     pkg = build([item("people-v1:mfa", "third_party_attestation", {"attested": {"present": True}}, mode="document")])
     out = sc.score_package(pkg, rubrics, emap)
-    # the mfa slot's rule is a fraction ladder; an attestation has no fraction, so the
-    # rule yields None and the item is unscored. That is correct: a SOC 2 saying "MFA
-    # enforced" carries no coverage number, so people-v1 has no scorable evidence here.
-    check("an attestation on a ladder-ruled slot is unscored, not guessed", "people-v1" not in out["rubrics"])
-    # Check the cap on a slot whose rule is attested_present instead:
+    # the mfa slot's rule is a fraction ladder, which a document never carries; an
+    # attestation must still score AS an attestation (cap 2), never be dropped.
+    lvl = [s for d in out["rubrics"]["people-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]["level"]
+    check("a SOC 2 attesting MFA scores attested level 2 on the ladder-ruled slot", lvl == 2)
+    # And the cap on a slot whose native rule is attested_present:
     pkg = build([item("technology-v1:2.2a", "third_party_attestation", {"attested": {"present": True}}, mode="document")])
     out = sc.score_package(pkg, rubrics, emap)
     lvl = [s for d in out["rubrics"]["technology-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]["level"]
@@ -106,6 +106,16 @@ def main():
     sub = [s for d in out["rubrics"]["technology-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "1b"][0]
     check("scanner observed no checks -> level 0 wins over the attestation's 2", sub["level"] == 0)
     check("contradiction reported", len(out["contradictions"]) == 1 and out["contradictions"][0]["key"] == "1b")
+
+    print("the killer demo: SOC 2 says MFA everywhere, the IdP export shows 30%")
+    pkg = build([
+        item("people-v1:mfa", "third_party_attestation", {"attested": {"present": True}}, mode="document"),
+        item("people-v1:mfa", "observed_export", {"mfa": {"coverage_fraction": 0.3}}),
+    ])
+    out = sc.score_package(pkg, rubrics, emap)
+    sub = [s for d in out["rubrics"]["people-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]
+    check("observed 30% -> level 1 wins over the attestation's 2", sub["level"] == 1 and sub["evidence"]["class"] == "observed")
+    check("contradiction reported on people-v1/2a", any(c["key"] == "2a" for c in out["contradictions"]))
 
     print("gaps are reported, never dropped")
     pkg = build([item("process-v1:incident-response", "third_party_attestation", {"attested": {"present": True}}, mode="document"),
