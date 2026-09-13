@@ -39,6 +39,9 @@ RUN chmod +x /app/dogfood.sh
 RUN useradd --create-home --uid 10001 beacon \
  && mkdir -p /out && chown beacon:beacon /out
 USER beacon
+# The container filesystem is read-only; the OpenTimestamps client keeps a small
+# calendar cache, so point it at the tmpfs rather than the read-only home.
+ENV XDG_CACHE_HOME=/tmp/cache
 
 # Evidence output lands in /out (mount a volume there to keep the sealed package).
 VOLUME ["/out"]

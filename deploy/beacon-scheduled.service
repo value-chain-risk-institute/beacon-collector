@@ -1,0 +1,17 @@
+[Unit]
+Description=Beacon Collector scheduled evidence collection (seal + anchor; never scores)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=beacon
+Group=beacon
+WorkingDirectory=/opt/beacon-collector
+ExecStart=/usr/bin/python3 /opt/beacon-collector/scheduled.py --state /var/lib/beacon/org run --config /etc/beacon/beacon-schedule.json --reason systemd
+# Least privilege: the collector observes; it never needs to write outside its state.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/beacon/org /tmp
+PrivateTmp=true
+ProtectHome=read-only

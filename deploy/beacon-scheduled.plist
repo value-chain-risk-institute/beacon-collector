@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>works.vcri.beacon-scheduled</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string>
+    <string>python3</string>
+    <string>/opt/beacon-collector/scheduled.py</string>
+    <string>--state</string><string>/var/lib/beacon/org</string>
+    <string>run</string>
+    <string>--config</string><string>/etc/beacon/beacon-schedule.json</string>
+    <string>--reason</string><string>launchd</string>
+  </array>
+  <key>StartInterval</key><integer>21600</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardOutPath</key><string>/var/log/beacon/scheduled.log</string>
+  <key>StandardErrorPath</key><string>/var/log/beacon/scheduled.err</string>
+</dict>
+</plist>

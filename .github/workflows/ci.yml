@@ -1,0 +1,94 @@
+# Beacon Collector CI: the tamper suite must fail-on-fudge before anything ships
+# (SPEC 1.0 criterion 6). Three jobs: tests, image build, and on a version tag a
+# signed image push to GHCR (keyless cosign, OIDC). Nothing here has network
+# access to the anchors: the offline suite fakes them on purpose.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: system deps (openssl for RFC 3161 offline verify)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends openssl
+      - name: python deps
+        run: pip install -r requirements.txt
+      - name: compile every module
+        run: python -m py_compile *.py
+      - name: seal + merkle suite
+        run: python test_merkle.py
+      - name: selective disclosure suite (forgeries must be refused)
+        run: python test_disclosure.py
+      - name: anchoring suite (offline; never overstate, never touch the seal)
+        run: python test_anchor.py
+      - name: end-to-end seal on a sample export, unsigned, no network anchoring
+        run: |
+          printf '[{"user":"a@x","mfa_enabled":true,"status":"active"},{"user":"b@x","mfa_enabled":false,"status":"active","privileged":true}]' > /tmp/users.json
+          python exportmode.py collect --export /tmp/users.json --source idp --subject ci --out-dir /tmp/out --no-anchor
+          python exportmode.py verify /tmp/out/package.json
+          python anchor.py verify /tmp/out/package.json
+          # tamper: flip one byte of an observation, verify must FAIL
+          python - <<'PY'
+          import json,sys
+          p="/tmp/out/package.json"; d=json.load(open(p))
+          d["items"][0]["observation"]["coverage"]=1.0 if "coverage" in d["items"][0]["observation"] else "tampered"
+          json.dump(d,open(p,"w"))
+          PY
+          if python exportmode.py verify /tmp/out/package.json; then echo "TAMPER NOT DETECTED"; exit 1; else echo "tamper detected, as required"; fi
+
+  image:
+    runs-on: ubuntu-latest
+    needs: tests
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: build (never pushed on branches)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: beacon-collector:ci
+      - name: smoke the image (verify path works offline inside it)
+        run: |
+          docker run --rm --entrypoint python beacon-collector:ci -c "import anchors, beaconlib, merkle; print('modules import; trust dir:', anchors.TRUST_DIR)"
+          docker run --rm --entrypoint sh beacon-collector:ci -c "test -f /app/anchor-trust/freetsa-cacert.pem && which ots && openssl version"
+      - name: login to GHCR (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: push tagged image
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:latest
+      - name: install cosign
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: sigstore/cosign-installer@v3
+      - name: sign the pushed image (keyless, OIDC; the signature lands in Rekor)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.push.outputs.digest }}

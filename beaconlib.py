@@ -53,7 +53,25 @@ def completeness(observation: dict, expected: list) -> dict:
 def build_package(subject: dict, collector: dict, items: list) -> dict:
     for it in items:
         it["item_sha256"] = hash_item(it)
+    chain = chain_from_env()
+    if chain:
+        # Inside the sealed core on purpose: a series is only a series if the
+        # link to the previous package is under the seal, not beside it.
+        collector = {**collector, "chain": chain}
     return {"schema": SCHEMA, "subject": subject, "collector": collector, "items": items}
+
+
+def chain_from_env() -> dict:
+    """Scheduled mode (scheduled.py) runs the org modes as subprocesses and hands
+    them the previous package hash and sequence through the environment, so every
+    mode chains without each CLI growing flags. Absent env = no chain field."""
+    prev = os.environ.get("BEACON_CHAIN_PREV")
+    seq = os.environ.get("BEACON_CHAIN_SEQ")
+    if not seq:
+        return {}
+    out = {"sequence": int(seq), "prev_package_hash": prev or None,
+           "series": os.environ.get("BEACON_CHAIN_SERIES") or None}
+    return out
 
 
 SEAL_VERSION = 1

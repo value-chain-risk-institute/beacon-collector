@@ -67,4 +67,8 @@ echo ">> verifying the seal on-box (proves tamper-evidence to anyone watching)..
 python /app/collector.py verify "${PKG}"
 
 echo
+echo ">> anchors (RFC 3161 token, OpenTimestamps proof) as recorded beside the package:"
+python /app/anchor.py verify "${PKG}" || echo ">> (an anchor problem never invalidates the seal; see ${PKG}.anchors.json)"
+
+echo
 echo "== done. The box has sealed its own posture. Nothing left this machine. =="

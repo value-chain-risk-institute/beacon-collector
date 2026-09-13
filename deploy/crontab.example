@@ -1,0 +1,2 @@
+# Beacon Collector scheduled mode, every 6 hours, as the beacon user.
+0 */6 * * * cd /opt/beacon-collector && python3 scheduled.py --state /var/lib/beacon/org run --config /etc/beacon/beacon-schedule.json --reason cron >> /var/log/beacon/scheduled.log 2>&1

@@ -1,0 +1,10 @@
+{
+  "series": "acme-prod",
+  "home": "~/.beacon",
+  "sign": true,
+  "jobs": [
+    {"name": "hosts", "mode": "scanner", "args": ["--target", "/", "--subject", "acme", "--box", "web-1", "--scope", "host posture"], "timeout_seconds": 1800},
+    {"name": "idp",   "mode": "export",  "args": ["--export", "/srv/exports/idp-users.json", "--source", "idp", "--subject", "acme"]},
+    {"name": "soc2",  "mode": "document","args": ["--doc", "/srv/docs/soc2-2026.txt", "--doc-type", "soc2", "--subject", "acme"]}
+  ]
+}
