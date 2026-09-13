@@ -6,16 +6,20 @@
 
 FROM python:3.12-slim
 
-# Trivy version is a build arg so the image is reproducible.
-# VERIFY this is a current Trivy release before building; do not trust it blindly.
-ARG TRIVY_VERSION=0.58.1
+# Trivy version is a build arg so the image is reproducible. Installed from the
+# release .deb with its published checksum verified, not from the upstream
+# install.sh (which failed in CI on 2026-09-12 with a bare exit 1 and no message).
+# Current release checked 2026-09-12: v0.74.0 (2026-08-14). Bump deliberately.
+ARG TRIVY_VERSION=0.74.0
 
-# System layer: install Trivy (the only external tool the collector shells out to),
-# then remove the tooling used to fetch it. No daemons, no services.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates openssl \
- && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-      | sh -s -- -b /usr/local/bin "v${TRIVY_VERSION}" \
+ && cd /tmp \
+ && curl -sfLO "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb" \
+ && curl -sfLO "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_checksums.txt" \
+ && grep " trivy_${TRIVY_VERSION}_Linux-64bit.deb$" "trivy_${TRIVY_VERSION}_checksums.txt" | sha256sum -c - \
+ && dpkg -i "trivy_${TRIVY_VERSION}_Linux-64bit.deb" \
+ && rm -f trivy_* \
  && apt-get purge -y curl \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*

@@ -11,7 +11,7 @@ services:
       context: .
       # Pin/verify TRIVY_VERSION against a current release before building.
       args:
-        TRIVY_VERSION: "0.58.1"
+        TRIVY_VERSION: "0.74.0"
     image: beacon-collector:dogfood
     # No `ports:` on purpose. Outbound-only tool; nothing to expose.
     read_only: true              # container FS is read-only; only the volumes below are writable
