@@ -1,0 +1,333 @@
+{
+ "id": "data-v1",
+ "title": "VCRI Data Asset Assessment Methodology v1",
+ "source": "2026-06-10-data-asset-assessment-methodology-v1.md",
+ "scaleMax": 5,
+ "hardFail": {
+  "belowDimension": 2,
+  "capGrade": "C"
+ },
+ "grades": [
+  {
+   "grade": "A",
+   "min": 4.25,
+   "max": 5,
+   "meaning": "Best-in-class data security posture. Documented, enforced, and attested controls across all dimensions. No critical findings. Suitable for high-trust handling of regulated and sensitive data."
+  },
+  {
+   "grade": "B",
+   "min": 3.5,
+   "max": 4.24,
+   "meaning": "Solid data security posture. Documented controls across most dimensions; minor gaps in 1-2 areas with remediation paths defined. Suitable for production handling of sensitive data with stated caveats."
+  },
+  {
+   "grade": "C",
+   "min": 2.75,
+   "max": 3.49,
+   "meaning": "Acceptable for limited handling. Notable gaps in 2-3 dimensions; remediation roadmap required. Not suitable for regulated or high-sensitivity data without compensating controls."
+  },
+  {
+   "grade": "D",
+   "min": 2,
+   "max": 2.74,
+   "meaning": "Significant gaps across multiple dimensions. Data-handling risk material; remediation required before sensitive use."
+  },
+  {
+   "grade": "F",
+   "min": 0,
+   "max": 1.999,
+   "meaning": "Material failure of data security posture. Handling of sensitive data not recommended in current state."
+  }
+ ],
+ "dimensions": [
+  {
+   "n": 1,
+   "name": "Trust",
+   "weight": 0.15,
+   "subcriteria": [
+    {
+     "key": "1a",
+     "title": "Data source provenance and lineage",
+     "weight": 0.4,
+     "anchors": [
+      "No record of where data originates; lineage is unknown for stored data.",
+      "Provenance noted ad-hoc for some sources; no standard and no lineage tracking.",
+      "A provenance standard is defined but inconsistently captured; lineage exists for some pipelines only.",
+      "Source provenance documented and consistently captured for all in-scope data; lineage traceable end to end through documented pipelines.",
+      "All of #3 plus automated lineage capture enforced in pipelines and periodically audited against the actual data estate, with findings documented.",
+      "All of #4 plus cryptographic or institutional provenance attestation on ingest (signed manifests, supply-chain attestations), independently verifiable lineage."
+     ]
+    },
+    {
+     "key": "1b",
+     "title": "Data classification and labeling",
+     "weight": 0.35,
+     "anchors": [
+      "No data classification scheme; sensitivity is not labeled.",
+      "Informal classification applied by individuals on some datasets; no defined scheme.",
+      "A classification scheme (e.g., public/internal/confidential/restricted) is defined but inconsistently applied.",
+      "Classification scheme documented and consistently applied to all in-scope data, with labels carried through storage.",
+      "All of #3 plus automated classification/labeling enforced at ingest and periodically audited for accuracy and coverage.",
+      "All of #4 plus labels drive downstream controls automatically (access, encryption, retention) and classification accuracy is independently validated."
+     ]
+    },
+    {
+     "key": "1c",
+     "title": "Third-party and shared-data trust controls",
+     "weight": 0.25,
+     "anchors": [
+      "Data received from or shared with third parties is ungoverned; no agreements or trust controls.",
+      "Some data-sharing arrangements exist informally; no consistent contractual or technical controls.",
+      "Data-sharing agreements and trust requirements are defined but inconsistently enforced across partners.",
+      "Documented data-sharing agreements and trust controls (scope, purpose, handling requirements) consistently applied to all third-party data flows.",
+      "All of #3 plus technical enforcement of sharing scope and periodic audit of partner compliance with handling requirements.",
+      "All of #4 plus independent attestation of partner controls (e.g., flow-down audit, signed attestations) and continuous monitoring of shared-data flows."
+     ]
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "name": "Identity",
+   "weight": 0.15,
+   "subcriteria": [
+    {
+     "key": "2a",
+     "title": "Authentication to data stores",
+     "weight": 0.4,
+     "anchors": [
+      "Data stores accept shared, default, or unauthenticated access.",
+      "Individual credentials used ad-hoc; shared accounts and weak/static credentials still present.",
+      "An authentication standard is defined (individual accounts, MFA) but inconsistently applied across stores.",
+      "Strong authentication (individual identities, MFA for interactive access) documented and consistently enforced across all in-scope data stores.",
+      "All of #3 plus centralized identity (SSO/federation), enforced credential policy, and audited authentication logs.",
+      "All of #4 plus phishing-resistant/passwordless authentication and independently attested identity controls, continuously monitored."
+     ]
+    },
+    {
+     "key": "2b",
+     "title": "Authorization and least-privilege on data",
+     "weight": 0.35,
+     "anchors": [
+      "Access is all-or-nothing; broad standing access to data with no least-privilege model.",
+      "Some access restrictions applied ad-hoc; no defined authorization model.",
+      "A role/attribute-based authorization model is defined but inconsistently applied; standing over-privilege common.",
+      "Least-privilege authorization (RBAC/ABAC) documented and consistently enforced; access mapped to need.",
+      "All of #3 plus periodic access recertification, automated detection of over-privilege, and audited grants/revocations.",
+      "All of #4 plus just-in-time/ephemeral access for sensitive data and independently attested least-privilege enforcement."
+     ]
+    },
+    {
+     "key": "2c",
+     "title": "Non-human and service identity for data access",
+     "weight": 0.25,
+     "anchors": [
+      "Services and applications reach data with shared, hard-coded, or long-lived static secrets.",
+      "Service credentials managed ad-hoc; secrets sometimes in code or config.",
+      "A service-identity standard (per-service credentials, secret storage) is defined but inconsistently applied.",
+      "Per-service identities with managed secrets documented and consistently applied; no hard-coded secrets in scope.",
+      "All of #3 plus automated secret rotation, short-lived credentials, and audited service-identity usage.",
+      "All of #4 plus workload identity federation (no long-lived secrets) and independently attested non-human identity controls."
+     ]
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "name": "Privacy",
+   "weight": 0.2,
+   "subcriteria": [
+    {
+     "key": "3a",
+     "title": "Data minimization and purpose limitation",
+     "weight": 0.4,
+     "anchors": [
+      "Data is collected and retained without regard to necessity or purpose.",
+      "Minimization considered informally on some projects; no standard.",
+      "A minimization and purpose-limitation policy is defined but inconsistently applied; collection often exceeds stated purpose.",
+      "Minimization and purpose limitation documented and consistently applied; collection mapped to declared purposes for in-scope data.",
+      "All of #3 plus technical enforcement (collection/field-level controls) and periodic audit that holdings match declared purposes.",
+      "All of #4 plus automated purpose-binding (data tagged to purpose, access denied outside it) with independently validated minimization."
+     ]
+    },
+    {
+     "key": "3b",
+     "title": "PII/PHI discovery and inventory",
+     "weight": 0.35,
+     "anchors": [
+      "No inventory of where PII/PHI resides; sensitive personal data location is unknown.",
+      "Partial, manually maintained inventory of some sensitive data stores.",
+      "An inventory standard is defined; discovery performed inconsistently and the inventory drifts from reality.",
+      "A documented PII/PHI inventory is maintained and consistently updated across in-scope stores.",
+      "All of #3 plus automated sensitive-data discovery/scanning on a cadence, reconciled against the inventory with findings tracked.",
+      "All of #4 plus continuous discovery across structured and unstructured stores, with inventory completeness independently validated."
+     ]
+    },
+    {
+     "key": "3c",
+     "title": "Consent and data-subject-rights handling (DSAR)",
+     "weight": 0.25,
+     "anchors": [
+      "No mechanism to capture consent or fulfill data-subject requests (access, deletion, correction).",
+      "Requests handled ad-hoc and manually with no defined process or tracking.",
+      "A DSAR/consent process is defined but inconsistently followed; fulfillment is slow and partly manual.",
+      "Documented consent capture and DSAR fulfillment process consistently applied within required timelines.",
+      "All of #3 plus tooling that locates subject data across stores, tracks request SLAs, and is audited for timeliness/completeness.",
+      "All of #4 plus largely automated, verifiable end-to-end DSAR fulfillment with independent attestation of completeness."
+     ]
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "name": "Protection",
+   "weight": 0.2,
+   "subcriteria": [
+    {
+     "key": "4a",
+     "title": "Encryption at rest and in transit",
+     "weight": 0.35,
+     "anchors": [
+      "Sensitive data is stored and transmitted in cleartext.",
+      "Encryption applied ad-hoc to some stores/links; no standard and gaps common.",
+      "An encryption standard (at rest and in transit) is defined but inconsistently applied across the estate.",
+      "Strong encryption at rest and in transit (current algorithms, TLS in transit) documented and consistently applied to all in-scope data.",
+      "All of #3 plus enforced encryption policy (deny-unencrypted), and periodic audit/scanning that confirms coverage.",
+      "All of #4 plus advanced protections where warranted (field-level/tokenization, mutual TLS) and independently attested encryption coverage."
+     ]
+    },
+    {
+     "key": "4b",
+     "title": "Key management",
+     "weight": 0.25,
+     "anchors": [
+      "Keys are hard-coded, shared, or stored alongside the data they protect.",
+      "Key handling is ad-hoc; manual, undocumented, with no rotation.",
+      "A key-management standard is defined but inconsistently applied; rotation and separation incomplete.",
+      "Centralized key management (dedicated KMS/HSM) with documented rotation and separation of duties, consistently applied.",
+      "All of #3 plus enforced rotation, access-controlled and audited key usage, and keys separated from protected data.",
+      "All of #4 plus HSM-backed/customer-managed keys with verifiable key lifecycle and independent attestation."
+     ]
+    },
+    {
+     "key": "4c",
+     "title": "Data loss prevention and egress controls",
+     "weight": 0.25,
+     "anchors": [
+      "No controls on data leaving the environment; bulk export and exfiltration are unrestricted.",
+      "Some egress restrictions applied ad-hoc; no DLP standard.",
+      "A DLP/egress policy is defined but inconsistently enforced; coverage has gaps.",
+      "DLP and egress controls (allow-listing, content inspection on sensitive data) documented and consistently enforced.",
+      "All of #3 plus monitored egress with alerting on anomalous transfers and audited DLP efficacy.",
+      "All of #4 plus adaptive DLP tuned on incident data with independently validated egress controls and continuous exfiltration monitoring."
+     ]
+    },
+    {
+     "key": "4d",
+     "title": "Cryptographic standards and crypto-agility",
+     "weight": 0.15,
+     "anchors": [
+      "No cryptographic standards exist; algorithm and key choices are left to individual implementers; no inventory of where cryptography is used.",
+      "Some algorithm choices documented informally; no inventory of cryptographic assets (algorithms, certificates, libraries); deprecated algorithms in use with no migration plan.",
+      "A cryptography policy (approved algorithms, protocol versions, key lengths) is defined but inconsistently enforced; certificate inventory partial; no agility plan.",
+      "Cryptography policy documented and applied; an inventory of cryptographic assets (algorithms, certificates, crypto libraries) is maintained; deprecated-algorithm migrations are tracked to completion.",
+      "All of #3 plus a maintained cryptographic bill of materials (CBOM) or equivalent across systems, automated certificate lifecycle management, and a crypto-agility plan (able to replace an algorithm or PKI without redesign).",
+      "All of #4 plus post-quantum readiness: a PQC migration roadmap prioritized from the CBOM, and independently attested crypto-agility (e.g., a demonstrated algorithm-rotation exercise)."
+     ]
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "name": "Safety",
+   "weight": 0.15,
+   "subcriteria": [
+    {
+     "key": "5a",
+     "title": "Data integrity controls",
+     "weight": 0.4,
+     "anchors": [
+      "No controls protect data from unauthorized or accidental modification; integrity is unverifiable.",
+      "Integrity addressed ad-hoc (occasional checks); no standard.",
+      "An integrity-control standard (checksums, validation, change controls) is defined but inconsistently applied.",
+      "Integrity controls (validation, checksums/hashing, controlled change paths) documented and consistently applied to in-scope data.",
+      "All of #3 plus automated tamper/corruption detection and audited integrity verification.",
+      "All of #4 plus cryptographic integrity (signed/immutable records where warranted) with independently verifiable integrity assurance."
+     ]
+    },
+    {
+     "key": "5b",
+     "title": "Backup and recovery (RPO/RTO)",
+     "weight": 0.35,
+     "anchors": [
+      "No backups; data loss is unrecoverable.",
+      "Backups taken ad-hoc; untested, no defined RPO/RTO.",
+      "A backup standard with target RPO/RTO is defined but inconsistently met; restores rarely tested.",
+      "Documented backups meeting defined RPO/RTO, consistently performed, with periodic restore testing.",
+      "All of #3 plus automated, monitored backups, regularly tested restores against RPO/RTO, and immutable/offline copies against ransomware.",
+      "All of #4 plus geographically resilient, independently verified recovery with attested RPO/RTO performance."
+     ]
+    },
+    {
+     "key": "5c",
+     "title": "Retention and defensible deletion",
+     "weight": 0.25,
+     "anchors": [
+      "Data is kept indefinitely; no retention schedule or deletion process.",
+      "Deletion happens ad-hoc; no defined retention schedule.",
+      "A retention/deletion schedule is defined but inconsistently enforced; stale data accumulates.",
+      "Documented retention schedule with defensible deletion consistently applied across in-scope data.",
+      "All of #3 plus automated retention enforcement and deletion, audited for completeness including backups/replicas.",
+      "All of #4 plus verifiable, attested deletion (certificates/cryptographic erasure) across all copies."
+     ]
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "name": "Security",
+   "weight": 0.15,
+   "subcriteria": [
+    {
+     "key": "6a",
+     "title": "Data-store security monitoring and logging",
+     "weight": 0.4,
+     "anchors": [
+      "Data-store access and activity are not logged or monitored.",
+      "Some logging enabled ad-hoc; logs unreviewed and not centralized.",
+      "A logging/monitoring standard is defined but inconsistently applied; coverage has gaps.",
+      "Data-access and activity logging documented and consistently enabled across in-scope stores, centrally collected.",
+      "All of #3 plus monitoring/alerting on anomalous data access (SIEM/analytics) with tamper-resistant logs and audited coverage.",
+      "All of #4 plus behavioral analytics for data-access anomalies, validated detection coverage, and independent attestation."
+     ]
+    },
+    {
+     "key": "6b",
+     "title": "Data breach detection and response",
+     "weight": 0.35,
+     "anchors": [
+      "No capability or plan to detect or respond to a data breach.",
+      "Response is improvised; no documented plan or defined roles.",
+      "A breach-response plan is defined but untested and inconsistently understood; notification obligations unclear.",
+      "Documented breach detection and response plan (roles, containment, notification obligations) consistently maintained.",
+      "All of #3 plus tested response (tabletop/exercise), data-specific detection use cases, and audited notification readiness.",
+      "All of #4 plus regularly exercised response with measured detection/response times and independently validated readiness."
+     ]
+    },
+    {
+     "key": "6c",
+     "title": "Data-store vulnerability and misconfiguration management",
+     "weight": 0.25,
+     "anchors": [
+      "Data stores are not patched or checked for misconfiguration; exposure is unknown.",
+      "Patching/hardening happens ad-hoc and reactively; no standard.",
+      "A patching and secure-configuration standard is defined but inconsistently applied; drift common.",
+      "Documented patching and secure-baseline configuration consistently applied to in-scope data stores.",
+      "All of #3 plus automated vulnerability and misconfiguration scanning on a cadence, with tracked remediation SLAs and audit.",
+      "All of #4 plus continuous posture management (drift auto-detection/remediation) with independently attested configuration."
+     ]
+    }
+   ]
+  }
+ ]
+}

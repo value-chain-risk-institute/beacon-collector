@@ -1,0 +1,320 @@
+{
+  "id": "people-v1",
+  "title": "VCRI People Asset Assessment Methodology v1",
+  "source": "2026-06-13-people-asset-assessment-methodology-v1.md",
+  "scaleMax": 5,
+  "hardFail": {
+    "belowDimension": 2,
+    "capGrade": "C"
+  },
+  "grades": [
+    {
+      "grade": "A",
+      "min": 4.25,
+      "max": 5,
+      "meaning": "Best-in-class people-security posture. Documented, enforced, and attested controls across all dimensions. Vetted workforce, phishing-resistant authentication, least privilege, mature insider-threat program. No critical findings."
+    },
+    {
+      "grade": "B",
+      "min": 3.5,
+      "max": 4.24,
+      "meaning": "Solid people-security posture. Documented controls across most dimensions; minor gaps in 1-2 areas with remediation paths defined. Suitable for production trust with stated caveats."
+    },
+    {
+      "grade": "C",
+      "min": 2.75,
+      "max": 3.49,
+      "meaning": "Acceptable with conditions. Notable gaps in 2-3 dimensions; remediation roadmap required. Not suitable for high-trust privileged operations without compensating controls."
+    },
+    {
+      "grade": "D",
+      "min": 2,
+      "max": 2.74,
+      "meaning": "Significant gaps across multiple dimensions. Workforce risk is material; remediation required before privileged trust."
+    },
+    {
+      "grade": "F",
+      "min": 0,
+      "max": 1.999,
+      "meaning": "Material failure of people-security posture. Privileged trust not recommended in current state."
+    }
+  ],
+  "dimensions": [
+    {
+      "n": 1,
+      "name": "Trust",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "1a",
+          "title": "Personnel vetting and background screening",
+          "weight": 0.4,
+          "anchors": [
+            "No vetting of personnel or contractors before granting access; identity and history unverified.",
+            "Screening performed ad-hoc for some roles; no defined standard or record.",
+            "A screening standard (background checks, identity verification) is defined but inconsistently applied across roles and contractors.",
+            "Documented vetting standard consistently applied to all in-scope personnel and contractors before access, with records retained.",
+            "All of #3 plus risk-tiered screening (deeper checks for privileged roles), periodic re-screening, and audit of completion.",
+            "All of #4 plus continuous-evaluation programs for high-trust roles and independently attested screening coverage."
+          ]
+        },
+        {
+          "key": "1b",
+          "title": "User behavioral baselining",
+          "weight": 0.35,
+          "anchors": [
+            "No understanding of normal user behavior; no baselines exist.",
+            "Behavioral observation is ad-hoc and manual on a few accounts only.",
+            "A baselining approach is defined but inconsistently deployed; coverage is partial.",
+            "Behavioral baselines documented and consistently maintained for in-scope users (login patterns, access norms).",
+            "All of #3 plus UEBA tooling deployed org-wide with anomaly scoring and audited coverage.",
+            "All of #4 plus statistical behavioral models with continuous anomaly scoring and independently validated detection efficacy."
+          ]
+        },
+        {
+          "key": "1c",
+          "title": "Individual accountability and no shared accounts",
+          "weight": 0.25,
+          "anchors": [
+            "Shared and generic accounts are common; actions cannot be attributed to individuals.",
+            "Individual accounts used in some areas; shared accounts persist without controls.",
+            "A no-shared-account standard is defined but inconsistently enforced; exceptions are untracked.",
+            "Individual accountability documented and consistently enforced; shared accounts eliminated or tightly controlled and logged.",
+            "All of #3 plus automated detection of shared-account usage and audited exception handling.",
+            "All of #4 plus cryptographically attributable individual sessions and independently verified accountability."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "name": "Identity",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "2a",
+          "title": "Authentication strength",
+          "weight": 0.4,
+          "anchors": [
+            "Password-only or shared credentials; no multi-factor authentication.",
+            "MFA enabled ad-hoc for some users or systems; coverage is partial and inconsistent.",
+            "An MFA standard is defined but inconsistently applied across the workforce and applications.",
+            "MFA documented and consistently enforced for all in-scope interactive access.",
+            "All of #3 plus adaptive/risk-based authentication, enforced credential policy, and audited authentication logs.",
+            "All of #4 plus phishing-resistant/passwordless authentication (FIDO2/WebAuthn) and independently attested identity controls."
+          ]
+        },
+        {
+          "key": "2b",
+          "title": "Identity lifecycle: joiners, movers, leavers",
+          "weight": 0.35,
+          "anchors": [
+            "No defined process for provisioning or deprovisioning access; access lingers after role change or departure.",
+            "Joiner/mover/leaver handled manually and ad-hoc; delays and orphaned accounts common.",
+            "A lifecycle process is defined but inconsistently followed; timeliness is not measured.",
+            "Documented joiner/mover/leaver process consistently applied; access changes tracked to role changes.",
+            "All of #3 plus automated provisioning/deprovisioning, periodic access recertification, and audited timeliness.",
+            "All of #4 plus event-driven lifecycle automation with independently attested zero-orphan-account assurance."
+          ]
+        },
+        {
+          "key": "2c",
+          "title": "Single sign-on and federation",
+          "weight": 0.25,
+          "anchors": [
+            "Credentials are siloed per application; no central identity.",
+            "SSO used for a few applications ad-hoc; most access uses separate credentials.",
+            "An SSO/federation standard is defined but inconsistently adopted across applications.",
+            "Centralized identity (SSO/federation) documented and consistently applied to in-scope applications.",
+            "All of #3 plus enforced federation policy, centralized session control, and audited coverage.",
+            "All of #4 plus near-complete federation with continuous session governance and independently attested centralization."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "name": "Privacy",
+      "weight": 0.1,
+      "subcriteria": [
+        {
+          "key": "3a",
+          "title": "Consent and personal-data handling by staff",
+          "weight": 0.4,
+          "anchors": [
+            "Staff handle personal data with no consent awareness or handling rules.",
+            "Some handling guidance exists informally; consent is assumed and untracked.",
+            "A personal-data handling and consent policy is defined but inconsistently followed by staff.",
+            "Documented handling rules and consent practices consistently applied by the in-scope workforce.",
+            "All of #3 plus technical guardrails on staff access to personal data and audited adherence.",
+            "All of #4 plus enforced purpose-bound access for staff with independently validated handling compliance."
+          ]
+        },
+        {
+          "key": "3b",
+          "title": "Workforce privacy controls",
+          "weight": 0.35,
+          "anchors": [
+            "No controls limiting staff access to personal data to what their role requires.",
+            "Role-based limits applied ad-hoc; broad staff access to personal data common.",
+            "A least-access standard for personal data is defined but inconsistently enforced for the workforce.",
+            "Documented role-scoped access to personal data consistently enforced across staff.",
+            "All of #3 plus periodic recertification of staff access to personal data and audited over-access detection.",
+            "All of #4 plus just-in-time access to sensitive personal data and independently attested minimization."
+          ]
+        },
+        {
+          "key": "3c",
+          "title": "Privacy training and awareness",
+          "weight": 0.25,
+          "anchors": [
+            "No privacy training; staff are unaware of obligations.",
+            "Privacy mentioned ad-hoc in onboarding only; no recurring program.",
+            "A privacy training program is defined but inconsistently delivered or tracked.",
+            "Documented recurring privacy training consistently delivered to the in-scope workforce with completion tracked.",
+            "All of #3 plus role-tailored privacy training, comprehension testing, and audited completion.",
+            "All of #4 plus adaptive training triggered by behavior/events with independently measured effectiveness."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "name": "Protection",
+      "weight": 0.25,
+      "subcriteria": [
+        {
+          "key": "4a",
+          "title": "Privileged access management and least privilege",
+          "weight": 0.4,
+          "anchors": [
+            "Users routinely operate with standing administrative privilege; no PAM.",
+            "Some privileged accounts managed ad-hoc; broad standing admin rights common.",
+            "A least-privilege/PAM standard is defined but inconsistently enforced; standing privilege persists.",
+            "Least privilege documented and consistently enforced; privileged accounts managed through a PAM solution.",
+            "All of #3 plus just-in-time elevation, session recording, privilege analytics, and audited grants.",
+            "All of #4 plus zero standing privilege and independently attested least-privilege enforcement."
+          ]
+        },
+        {
+          "key": "4b",
+          "title": "Security awareness and anti-phishing training",
+          "weight": 0.35,
+          "anchors": [
+            "No security-awareness training; staff are untested against phishing.",
+            "Annual awareness content delivered ad-hoc; no phishing simulation or measurement.",
+            "An awareness program is defined but inconsistently delivered; phishing tests run rarely.",
+            "Documented recurring awareness program with phishing simulations consistently delivered and tracked.",
+            "All of #3 plus measured click/report rates, adaptive training triggered by failures, and audited improvement trends.",
+            "All of #4 plus continuous behavioral coaching with independently validated reduction in susceptibility."
+          ]
+        },
+        {
+          "key": "4c",
+          "title": "Insider-threat and social-engineering resistance",
+          "weight": 0.25,
+          "anchors": [
+            "No insider-threat program; social-engineering attempts succeed without friction.",
+            "Insider risk handled reactively and ad-hoc; no defined controls (e.g., callback verification).",
+            "Insider-threat and verification controls are defined but inconsistently applied.",
+            "Documented insider-threat controls (verification procedures, dual control for sensitive actions) consistently applied.",
+            "All of #3 plus behavioral risk indicators monitored, escalation paths exercised, and audited control adherence.",
+            "All of #4 plus predictive insider-risk analytics with independently validated program effectiveness."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Safety",
+      "weight": 0.1,
+      "subcriteria": [
+        {
+          "key": "5a",
+          "title": "Role clarity and segregation of duties",
+          "weight": 0.4,
+          "anchors": [
+            "Roles and responsibilities are undefined; anyone can perform any sensitive action.",
+            "Roles described informally; segregation of duties applied ad-hoc where convenient.",
+            "A role/SoD model is defined but inconsistently enforced; conflicting duties common.",
+            "Documented roles with segregation of duties for sensitive functions consistently enforced.",
+            "All of #3 plus automated SoD-conflict detection, periodic review, and audited enforcement.",
+            "All of #4 plus continuous SoD monitoring with independently attested conflict-free assignment."
+          ]
+        },
+        {
+          "key": "5b",
+          "title": "Competency and security-training currency",
+          "weight": 0.3,
+          "anchors": [
+            "No requirement that staff in security-relevant roles hold or maintain relevant competency.",
+            "Competency expectations exist informally; currency is not tracked.",
+            "A competency/training-currency standard is defined but inconsistently maintained.",
+            "Documented competency requirements for security-relevant roles consistently maintained and tracked.",
+            "All of #3 plus measured currency, gap remediation, and audited training completion for in-scope roles.",
+            "All of #4 plus continuously managed competency with independently verified currency."
+          ]
+        },
+        {
+          "key": "5c",
+          "title": "Key-person risk, succession, and coverage",
+          "weight": 0.3,
+          "anchors": [
+            "Critical functions depend on single individuals with no backup or documentation.",
+            "Key-person risk recognized informally; mitigation is ad-hoc.",
+            "A coverage/succession standard is defined but inconsistently applied; single points of human failure persist.",
+            "Documented cross-training, backup coverage, and succession for critical functions consistently maintained.",
+            "All of #3 plus tested coverage (planned absence drills), runbook currency, and audited coverage gaps.",
+            "All of #4 plus resilient, regularly exercised succession with independently validated continuity."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "name": "Security",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "6a",
+          "title": "User activity monitoring",
+          "weight": 0.4,
+          "anchors": [
+            "User activity on systems and data is not logged or monitored.",
+            "Some user activity logged ad-hoc; logs unreviewed and not centralized.",
+            "A user-activity monitoring standard is defined but inconsistently applied; coverage has gaps.",
+            "User activity logging documented and consistently enabled across in-scope systems, centrally collected.",
+            "All of #3 plus alerting on anomalous user activity (SIEM/UEBA), tamper-resistant logs, and audited coverage.",
+            "All of #4 plus behavioral analytics on all human activity with validated detection coverage and independent attestation."
+          ]
+        },
+        {
+          "key": "6b",
+          "title": "Insider-threat detection and response",
+          "weight": 0.35,
+          "anchors": [
+            "No capability or plan to detect or respond to malicious or negligent insider activity.",
+            "Insider incidents handled improvised; no documented plan or roles.",
+            "An insider-threat response plan is defined but untested and inconsistently understood.",
+            "Documented insider-threat detection and response plan (roles, containment, HR/legal coordination) consistently maintained.",
+            "All of #3 plus tested response, insider-specific detection use cases, and audited readiness.",
+            "All of #4 plus regularly exercised response with measured detection/response times and independently validated readiness."
+          ]
+        },
+        {
+          "key": "6c",
+          "title": "Offboarding and access-revocation integrity",
+          "weight": 0.25,
+          "anchors": [
+            "Departing personnel retain access; revocation is unreliable or skipped.",
+            "Offboarding done manually and ad-hoc; delays and missed systems common.",
+            "An offboarding standard is defined but inconsistently executed; completeness unverified.",
+            "Documented offboarding consistently executed with timely revocation across in-scope systems.",
+            "All of #3 plus automated revocation, completeness verification, and audited offboarding timeliness.",
+            "All of #4 plus event-driven immediate revocation with independently attested zero-residual-access assurance."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,333 @@
+{
+  "id": "technology-v1",
+  "title": "VCRI Technology Asset Assessment Methodology v1",
+  "source": "2026-06-11-technology-asset-assessment-methodology-v1.md",
+  "scaleMax": 5,
+  "hardFail": {
+    "belowDimension": 2,
+    "capGrade": "C"
+  },
+  "grades": [
+    {
+      "grade": "A",
+      "min": 4.25,
+      "max": 5,
+      "meaning": "Best-in-class infrastructure security posture. Documented, enforced, and attested controls across all dimensions. No critical findings. Suitable for high-trust hosting of regulated and sensitive workloads."
+    },
+    {
+      "grade": "B",
+      "min": 3.5,
+      "max": 4.24,
+      "meaning": "Solid infrastructure security posture. Documented controls across most dimensions; minor gaps in 1-2 areas with remediation paths defined. Suitable for production workloads with stated caveats."
+    },
+    {
+      "grade": "C",
+      "min": 2.75,
+      "max": 3.49,
+      "meaning": "Acceptable for limited use. Notable gaps in 2-3 dimensions; remediation roadmap required. Not suitable for regulated or high-sensitivity workloads without compensating controls."
+    },
+    {
+      "grade": "D",
+      "min": 2,
+      "max": 2.74,
+      "meaning": "Significant gaps across multiple dimensions. Infrastructure risk material; remediation required before sensitive use."
+    },
+    {
+      "grade": "F",
+      "min": 0,
+      "max": 1.999,
+      "meaning": "Material failure of infrastructure security posture. Hosting of sensitive workloads not recommended in current state."
+    }
+  ],
+  "dimensions": [
+    {
+      "n": 1,
+      "name": "Trust",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "1a",
+          "title": "Asset inventory and software provenance/SBOM",
+          "weight": 0.32,
+          "anchors": [
+            "No inventory of hosts, workloads, or running software; what is deployed is unknown.",
+            "Inventory maintained ad-hoc in spreadsheets for some estate; no software provenance or SBOM.",
+            "An asset-inventory standard is defined but inconsistently maintained; provenance/SBOM captured for some components only.",
+            "A documented asset inventory (hosts, workloads, running software) is consistently maintained across the in-scope estate, with SBOM/provenance for in-scope software.",
+            "All of #3 plus automated, continuously reconciled discovery enforced, with SBOMs generated in the pipeline and periodically audited against the live estate.",
+            "All of #4 plus cryptographically signed SBOMs and provenance attestations (build attestations, signed artifacts) that are independently verifiable, with continuous drift reconciliation."
+          ]
+        },
+        {
+          "key": "1b",
+          "title": "Configuration baseline and integrity",
+          "weight": 0.28,
+          "anchors": [
+            "No configuration baseline; systems are configured individually with no known-good reference.",
+            "Some baseline notes exist ad-hoc; no enforced standard and no drift detection.",
+            "A configuration baseline is defined (e.g., CIS/STIG-derived) but inconsistently applied; drift is unmanaged.",
+            "A documented configuration baseline is consistently applied across the in-scope estate, with periodic drift review.",
+            "All of #3 plus baseline enforced as code (IaC/configuration management) and automated drift detection that is audited and remediated.",
+            "All of #4 plus continuous, attested configuration integrity (signed/immutable infrastructure, file-integrity monitoring) with independently verifiable baseline conformance."
+          ]
+        },
+        {
+          "key": "1c",
+          "title": "Third-party and supply-chain component trust",
+          "weight": 0.2,
+          "anchors": [
+            "Third-party images, packages, and dependencies are pulled and run with no trust controls.",
+            "Some components vetted ad-hoc by individuals; no consistent provenance or vetting standard.",
+            "A component-trust standard (trusted registries, dependency review) is defined but inconsistently enforced.",
+            "Documented trusted sources, dependency vetting, and image-provenance controls consistently applied to in-scope components.",
+            "All of #3 plus enforced trusted-registry/signature policy at admission and periodic audit of the dependency and image supply chain.",
+            "All of #4 plus enforced signature verification and provenance attestation at deploy (e.g., admission control on signed/attested artifacts), independently validated."
+          ]
+        },
+        {
+          "key": "1x",
+          "title": "Dependency maintainer-health & provenance",
+          "weight": 0.2,
+          "anchors": [
+            "No visibility into dependency maintainer status; packages (including those with install/build hooks) are installed unreviewed from registries.",
+            "SBOM lists versions/licenses but carries no maintainer, ownership, or orphaned-package signal.",
+            "Direct-dependency maintainer changes / orphaned status are tracked; build hooks reviewed on major updates.",
+            "Automated alerts on ownership change, maintainer turnover, or orphan-adoption across direct + transitive dependencies; install-hook/build-script scanning in CI.",
+            "All of #3 + quarantine/block on maintainer or ownership change pending review; pinned + vendored dependencies; provenance attestation (SLSA / sigstore / npm provenance) consumed where available.",
+            "All of #4 + provenance required (unattested artifacts rejected), egress-controlled CI with short-lived secrets, and independent verification (reproducible builds) with a documented coverage rate."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "name": "Identity",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "2a",
+          "title": "System and service authentication",
+          "weight": 0.4,
+          "anchors": [
+            "Systems and services accept shared, default, or unauthenticated access.",
+            "Individual credentials used ad-hoc; shared accounts, default credentials, or static keys still present.",
+            "An authentication standard (individual accounts, MFA, key-based SSH) is defined but inconsistently applied across the estate.",
+            "Strong authentication (individual identities, MFA for interactive access, key-based remote access) documented and consistently enforced across in-scope systems.",
+            "All of #3 plus centralized identity (SSO/federation/directory), enforced credential policy, and audited authentication logs.",
+            "All of #4 plus phishing-resistant/passwordless authentication and independently attested identity controls, continuously monitored."
+          ]
+        },
+        {
+          "key": "2b",
+          "title": "Privileged access management",
+          "weight": 0.35,
+          "anchors": [
+            "Administrative access is broad and standing; root/admin is shared with no control.",
+            "Some restriction of admin access applied ad-hoc; no defined privileged-access model.",
+            "A privileged-access model (separate admin accounts, approval) is defined but inconsistently applied; standing privilege common.",
+            "Documented privileged-access management (separate admin identities, least privilege, approval workflow) consistently enforced.",
+            "All of #3 plus brokered/vaulted privileged access with session recording, periodic recertification, and audited grants/revocations.",
+            "All of #4 plus just-in-time, time-bound privilege elevation (zero standing admin) with independently attested enforcement."
+          ]
+        },
+        {
+          "key": "2c",
+          "title": "Device/workload identity and attestation",
+          "weight": 0.25,
+          "anchors": [
+            "Workloads and devices reach systems with shared, hard-coded, or long-lived static secrets; no machine identity.",
+            "Machine credentials managed ad-hoc; secrets sometimes embedded in code, images, or config.",
+            "A workload-identity standard (per-workload credentials, secret storage) is defined but inconsistently applied.",
+            "Per-workload/device identities with managed secrets documented and consistently applied; no hard-coded secrets in scope.",
+            "All of #3 plus automated secret rotation, short-lived credentials, and audited machine-identity usage.",
+            "All of #4 plus hardware-rooted or federated workload identity with attestation (no long-lived secrets), independently verified."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "name": "Privacy",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "3a",
+          "title": "Data-in-transit and at-rest protection on systems",
+          "weight": 0.4,
+          "anchors": [
+            "Data on systems and between systems is handled in cleartext; no transport or storage protection.",
+            "Encryption applied ad-hoc to some hosts/links; no standard and gaps common.",
+            "A standard for system-level encryption (disk/volume at rest, TLS between services) is defined but inconsistently applied.",
+            "Encryption of data at rest (full-disk/volume) and in transit (TLS for internal and external traffic) documented and consistently applied to in-scope systems.",
+            "All of #3 plus enforced policy (deny-unencrypted storage/transport) and periodic scanning that confirms coverage across the estate.",
+            "All of #4 plus mutual TLS between services and managed/attested key handling for system encryption, with independently validated coverage."
+          ]
+        },
+        {
+          "key": "3b",
+          "title": "Telemetry/logging data minimization",
+          "weight": 0.3,
+          "anchors": [
+            "Logs and telemetry capture sensitive data indiscriminately (secrets, full PII) with no minimization.",
+            "Minimization considered ad-hoc on some log sources; no standard.",
+            "A telemetry-minimization standard (redaction, field scoping) is defined but inconsistently applied; sensitive data still leaks into logs.",
+            "Documented minimization and redaction of sensitive data in logs/telemetry consistently applied across in-scope sources.",
+            "All of #3 plus automated redaction/scrubbing at collection and periodic audit that telemetry holds no unnecessary sensitive data.",
+            "All of #4 plus enforced, validated minimization across all telemetry pipelines with independent attestation of compliance."
+          ]
+        },
+        {
+          "key": "3c",
+          "title": "Network segmentation and need-to-know access",
+          "weight": 0.3,
+          "anchors": [
+            "Flat network; any system can reach any other with no segmentation.",
+            "Some segmentation applied ad-hoc; no defined segmentation model.",
+            "A segmentation model (zones, VLANs, security groups) is defined but inconsistently implemented; broad lateral reach remains.",
+            "Documented network segmentation with need-to-know access controls consistently applied across in-scope environments.",
+            "All of #3 plus enforced micro-segmentation/default-deny east-west policy and audited segmentation efficacy.",
+            "All of #4 plus identity-aware/zero-trust segmentation with continuous validation and independently attested isolation."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "name": "Protection",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "4a",
+          "title": "Vulnerability and patch management",
+          "weight": 0.4,
+          "anchors": [
+            "Systems are not scanned for vulnerabilities or patched; exposure is unknown.",
+            "Patching and scanning happen ad-hoc and reactively; no standard or cadence.",
+            "A vulnerability-management and patching standard (cadence, severity SLAs) is defined but inconsistently applied; drift and overdue patches common.",
+            "Documented vulnerability scanning and patch management with severity-based SLAs consistently applied across the in-scope estate.",
+            "All of #3 plus automated scanning on a cadence, tracked remediation against SLAs, and audited closure rates.",
+            "All of #4 plus risk-prioritized (exploitability-aware) remediation, near-continuous scanning, and independently attested patch posture."
+          ]
+        },
+        {
+          "key": "4b",
+          "title": "Endpoint and workload protection (EDR)",
+          "weight": 0.35,
+          "anchors": [
+            "No endpoint or workload protection; hosts run with no anti-malware or runtime defense.",
+            "Basic antivirus deployed ad-hoc to some hosts; no consistent coverage or management.",
+            "An endpoint/workload-protection standard is defined but inconsistently deployed; coverage has material gaps.",
+            "Managed endpoint/workload protection (EDR or equivalent runtime defense) documented and consistently deployed across in-scope hosts.",
+            "All of #3 plus centrally managed EDR with enforced coverage, alerting, and audited deployment completeness.",
+            "All of #4 plus behavioral/runtime threat detection with validated detection coverage and independently attested protection."
+          ]
+        },
+        {
+          "key": "4c",
+          "title": "Network security controls (firewall/IPS/egress)",
+          "weight": 0.25,
+          "anchors": [
+            "No network filtering; inbound and outbound traffic is unrestricted.",
+            "Some firewall rules applied ad-hoc; no standard and broad allow rules common.",
+            "A network-control standard (default-deny ingress, egress filtering, IPS) is defined but inconsistently applied.",
+            "Documented network security controls (default-deny ingress, egress restrictions, IDS/IPS where warranted) consistently applied.",
+            "All of #3 plus enforced egress allow-listing, monitored IPS/firewall with alerting, and audited rule efficacy.",
+            "All of #4 plus adaptive, tuned network controls with continuous validation and independently attested perimeter and egress posture."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Safety",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "5a",
+          "title": "Change and configuration management",
+          "weight": 0.4,
+          "anchors": [
+            "Changes are made directly and unrecorded; no change control.",
+            "Changes tracked ad-hoc for some systems; no defined change process.",
+            "A change-management process (review, approval, record) is defined but inconsistently followed; unrecorded changes common.",
+            "Documented change management (review, approval, rollback, audit trail) consistently applied to in-scope systems.",
+            "All of #3 plus changes delivered through controlled pipelines (CI/CD, peer review) with automated change records and audit.",
+            "All of #4 plus fully managed change-as-code with policy-gated, automatically verified deployments and independent attestation."
+          ]
+        },
+        {
+          "key": "5b",
+          "title": "Resilience, backup and DR (RTO/RPO)",
+          "weight": 0.35,
+          "anchors": [
+            "No backups or disaster-recovery capability; an outage or loss is unrecoverable.",
+            "Backups taken ad-hoc; untested, with no defined RTO/RPO or DR plan.",
+            "A backup/DR standard with target RTO/RPO is defined but inconsistently met; restores and failover rarely tested.",
+            "Documented backups and a DR plan meeting defined RTO/RPO, consistently performed, with periodic restore/failover testing.",
+            "All of #3 plus automated, monitored backups, regularly tested recovery against RTO/RPO, and immutable/offline copies against ransomware.",
+            "All of #4 plus geographically resilient, regularly exercised failover with independently verified RTO/RPO performance."
+          ]
+        },
+        {
+          "key": "5c",
+          "title": "Capacity and availability monitoring",
+          "weight": 0.25,
+          "anchors": [
+            "Capacity and availability are not monitored; outages are discovered by users.",
+            "Some monitoring exists ad-hoc; no defined thresholds or alerting.",
+            "A capacity/availability-monitoring standard is defined but inconsistently applied; coverage and alerting have gaps.",
+            "Documented availability and capacity monitoring with alerting consistently applied across in-scope systems.",
+            "All of #3 plus proactive capacity forecasting, tracked SLOs, and audited monitoring coverage.",
+            "All of #4 plus automated scaling/self-healing tied to validated SLOs with independently attested availability performance."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "name": "Security",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "6a",
+          "title": "Security monitoring and SIEM coverage",
+          "weight": 0.4,
+          "anchors": [
+            "Security events are not logged or monitored; there is no central visibility.",
+            "Some security logging enabled ad-hoc; logs unreviewed and not centralized.",
+            "A security-monitoring standard is defined but inconsistently applied; SIEM/log coverage has material gaps.",
+            "Security logging documented and consistently enabled across in-scope systems, centrally collected into a SIEM or equivalent.",
+            "All of #3 plus correlated detection use cases, alerting on suspicious activity, tamper-resistant logs, and audited coverage.",
+            "All of #4 plus behavioral analytics, validated detection coverage against a threat model, and independent attestation."
+          ]
+        },
+        {
+          "key": "6b",
+          "title": "Incident detection and response",
+          "weight": 0.35,
+          "anchors": [
+            "No capability or plan to detect or respond to a security incident.",
+            "Response is improvised; no documented plan, defined roles, or escalation path.",
+            "An incident-response plan is defined but untested and inconsistently understood; roles and escalation unclear.",
+            "Documented incident-response plan (roles, detection, containment, escalation, notification) consistently maintained.",
+            "All of #3 plus tested response (tabletop/exercise), defined detection use cases, and audited response readiness.",
+            "All of #4 plus regularly exercised response with measured detection/response times (MTTD/MTTR) and independently validated readiness."
+          ]
+        },
+        {
+          "key": "6c",
+          "title": "Secure SDLC and hardening standards",
+          "weight": 0.25,
+          "anchors": [
+            "Systems and software are built and deployed with no security review or hardening standard.",
+            "Hardening and security review happen ad-hoc; no defined standard.",
+            "Secure-build and hardening standards (e.g., CIS/STIG, secure-SDLC gates) are defined but inconsistently applied.",
+            "Documented secure-SDLC practices and hardening baselines consistently applied to in-scope builds and systems.",
+            "All of #3 plus enforced security gates in the pipeline (SAST/dependency/config checks), enforced hardening, and audited conformance.",
+            "All of #4 plus continuous, policy-as-code enforced secure build and hardening with independently attested conformance."
+          ]
+        }
+      ]
+    }
+  ]
+}

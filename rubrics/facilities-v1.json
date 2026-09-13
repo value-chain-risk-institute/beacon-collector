@@ -1,0 +1,320 @@
+{
+  "id": "facilities-v1",
+  "title": "VCRI Facilities Asset Assessment Methodology v1",
+  "source": "2026-06-13-facilities-asset-assessment-methodology-v1.md",
+  "scaleMax": 5,
+  "hardFail": {
+    "belowDimension": 2,
+    "capGrade": "C"
+  },
+  "grades": [
+    {
+      "grade": "A",
+      "min": 4.25,
+      "max": 5,
+      "meaning": "Best-in-class facilities posture. Inventoried, access-controlled, monitored, resilient, and attested physical and OT estate across all dimensions. No critical findings."
+    },
+    {
+      "grade": "B",
+      "min": 3.5,
+      "max": 4.24,
+      "meaning": "Solid facilities posture. Documented controls across most dimensions; minor gaps in 1-2 areas with remediation paths defined. Suitable for production reliance with stated caveats."
+    },
+    {
+      "grade": "C",
+      "min": 2.75,
+      "max": 3.49,
+      "meaning": "Acceptable with conditions. Notable gaps in 2-3 dimensions; remediation roadmap required. Not suitable for high-assurance physical/OT reliance without compensating controls."
+    },
+    {
+      "grade": "D",
+      "min": 2,
+      "max": 2.74,
+      "meaning": "Significant gaps across multiple dimensions. Physical/OT risk is material; remediation required before high-assurance reliance."
+    },
+    {
+      "grade": "F",
+      "min": 0,
+      "max": 1.999,
+      "meaning": "Material failure of facilities posture. Physical and cyber-physical exposure is unmanaged; reliance not recommended in current state."
+    }
+  ],
+  "dimensions": [
+    {
+      "n": 1,
+      "name": "Trust",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "1a",
+          "title": "Facility and building-system inventory",
+          "weight": 0.4,
+          "anchors": [
+            "No facility inventory; building systems (BMS, HVAC, access control, OT/IoT) are undocumented.",
+            "Partial inventory kept ad-hoc for some sites; building systems largely uncatalogued.",
+            "An inventory standard is defined but inconsistently maintained; OT/IoT coverage drifts from reality.",
+            "Documented inventory of in-scope sites and building/OT systems (vendor, model, firmware) consistently maintained.",
+            "All of #3 plus automated discovery of networked building/OT assets and periodic reconciliation audits.",
+            "All of #4 plus continuous asset discovery with independently validated inventory completeness."
+          ]
+        },
+        {
+          "key": "1b",
+          "title": "Building/OT system provenance and SBOM",
+          "weight": 0.35,
+          "anchors": [
+            "No provenance for building/OT systems; origin and software composition unknown.",
+            "Provenance noted ad-hoc for a few systems; no SBOM collection.",
+            "A provenance/SBOM standard for building-OT vendors is defined but inconsistently collected.",
+            "Vendor/firmware provenance and SBOMs consistently collected for in-scope building/OT systems.",
+            "All of #3 plus SBOMs validated and tracked for known vulnerabilities, with audited coverage.",
+            "All of #4 plus cryptographically attested firmware provenance independently verifiable."
+          ]
+        },
+        {
+          "key": "1c",
+          "title": "Third-party facility and OT vendor governance",
+          "weight": 0.25,
+          "anchors": [
+            "Facility and building-system vendors operate ungoverned; remote-access and maintenance uncontrolled.",
+            "Some vendor arrangements exist informally; no consistent security requirements.",
+            "Facility/OT vendor security requirements are defined but inconsistently enforced.",
+            "Documented security requirements and access governance consistently applied to facility/OT vendors.",
+            "All of #3 plus technical control of vendor remote access and periodic audit of vendor compliance.",
+            "All of #4 plus independent attestation of facility/OT vendor controls and continuous monitoring of vendor access."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "name": "Identity",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "2a",
+          "title": "Physical access control and badging",
+          "weight": 0.4,
+          "anchors": [
+            "Doors are unlocked or use shared keys; no badge system; entry is unattributable.",
+            "Badge or key control applied ad-hoc at some sites; sharing and untracked keys common.",
+            "A physical-access standard (individual badges, access logs) is defined but inconsistently applied across sites.",
+            "Individual badge-based access with logging documented and consistently enforced across in-scope sites.",
+            "All of #3 plus centralized badge lifecycle management, zone-based least access, and audited access logs.",
+            "All of #4 plus continuously governed physical access with independently attested controls."
+          ]
+        },
+        {
+          "key": "2b",
+          "title": "Multi-factor physical access to sensitive areas",
+          "weight": 0.35,
+          "anchors": [
+            "Sensitive areas (server rooms, OT spaces) have no stronger control than general areas.",
+            "Extra controls applied ad-hoc to a few sensitive areas; inconsistent.",
+            "A multi-factor physical-access standard for sensitive areas is defined but inconsistently enforced.",
+            "Multi-factor physical access (badge + PIN/biometric) documented and consistently enforced for in-scope sensitive areas.",
+            "All of #3 plus anti-tailgating measures, access-pattern review, and audited enforcement.",
+            "All of #4 plus continuously verified, behavior-aware physical access with independent attestation."
+          ]
+        },
+        {
+          "key": "2c",
+          "title": "Building-system credential and identity management",
+          "weight": 0.25,
+          "anchors": [
+            "Building/OT systems use default or shared credentials; logins are unattributable.",
+            "Some default credentials changed ad-hoc; many systems remain on shared/default logins.",
+            "A building-system credential standard is defined but inconsistently applied across OT/BMS.",
+            "Unique, managed credentials and individual identity for in-scope building/OT systems consistently enforced.",
+            "All of #3 plus centralized OT identity/secret management, rotation, and audited usage.",
+            "All of #4 plus hardware-backed building-system identity independently attested."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "name": "Privacy",
+      "weight": 0.05,
+      "subcriteria": [
+        {
+          "key": "3a",
+          "title": "Physical privacy controls",
+          "weight": 0.4,
+          "anchors": [
+            "No physical privacy controls; sensitive discussions and materials are exposed in open areas.",
+            "Clean-desk and meeting-room practices applied ad-hoc at some sites.",
+            "A physical-privacy standard (clean desk, secure rooms for sensitive work) is defined but inconsistently applied.",
+            "Documented physical-privacy controls consistently applied across in-scope sites (secure rooms, screening, soundproofing where warranted).",
+            "All of #3 plus audited compliance (e.g., clean-desk checks) and physical-privacy zones defined and enforced.",
+            "All of #4 plus privacy-by-design facility architecture with independently validated controls."
+          ]
+        },
+        {
+          "key": "3b",
+          "title": "Surveillance and visitor data minimization",
+          "weight": 0.35,
+          "anchors": [
+            "Surveillance (CCTV) and visitor records are collected and retained without limit or policy.",
+            "Some retention practice exists ad-hoc; minimization not considered.",
+            "A minimization/retention standard for surveillance and visitor data is defined but inconsistently applied.",
+            "Documented minimization and retention for surveillance/visitor data consistently applied across in-scope sites.",
+            "All of #3 plus enforced retention limits, access controls on footage, and audited compliance.",
+            "All of #4 plus minimized-by-design surveillance with independently validated retention/access governance."
+          ]
+        },
+        {
+          "key": "3c",
+          "title": "Privacy-by-design in facility architecture",
+          "weight": 0.25,
+          "anchors": [
+            "Facility design ignores privacy; layouts expose sensitive work and people.",
+            "Privacy considered ad-hoc in some renovations; no standard.",
+            "Privacy-by-design facility requirements are defined but inconsistently applied to new build/renovation.",
+            "Privacy-by-design consistently applied to in-scope facility changes (segregated visitor areas, sightline control).",
+            "All of #3 plus design reviews for surveillance minimization and audited adherence.",
+            "All of #4 plus continuously improved privacy-by-design standards independently validated."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "name": "Protection",
+      "weight": 0.25,
+      "subcriteria": [
+        {
+          "key": "4a",
+          "title": "Physical perimeter and intrusion protection",
+          "weight": 0.4,
+          "anchors": [
+            "No physical perimeter protection; intrusion is trivial and undetected.",
+            "Basic locks and barriers applied ad-hoc; no consistent perimeter standard.",
+            "A perimeter-protection standard (barriers, locks, intrusion detection) is defined but inconsistently implemented.",
+            "Documented perimeter protection with intrusion detection consistently implemented across in-scope sites.",
+            "All of #3 plus monitored intrusion alarms with response procedures and audited perimeter integrity.",
+            "All of #4 plus layered, continuously monitored perimeter defense independently validated."
+          ]
+        },
+        {
+          "key": "4b",
+          "title": "OT/building-system network segmentation",
+          "weight": 0.35,
+          "anchors": [
+            "Building/OT systems sit on flat networks reachable from IT or the internet; no segmentation.",
+            "Some segmentation applied ad-hoc; OT/IT separation is incomplete and porous.",
+            "An OT-segmentation standard is defined but inconsistently enforced; gaps and undocumented connections persist.",
+            "Documented OT/IT segmentation consistently enforced for in-scope building/OT systems.",
+            "All of #3 plus monitored segmentation boundaries, controlled OT remote access, and audited segmentation integrity.",
+            "All of #4 plus zero-trust OT architecture with continuous verification independently attested."
+          ]
+        },
+        {
+          "key": "4c",
+          "title": "Environmental protection (power, HVAC, fire)",
+          "weight": 0.25,
+          "anchors": [
+            "Critical spaces lack environmental protection; power, cooling, and fire risks are unmanaged.",
+            "Some environmental controls exist ad-hoc; no standard or testing.",
+            "An environmental-protection standard (UPS, HVAC, fire suppression) is defined but inconsistently implemented.",
+            "Documented environmental controls for critical in-scope spaces consistently implemented.",
+            "All of #3 plus monitored environmental systems with alerting and audited protection coverage.",
+            "All of #4 plus resilient, continuously monitored environmental protection independently validated."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Safety",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "5a",
+          "title": "Life-safety and physical safety systems",
+          "weight": 0.4,
+          "anchors": [
+            "No managed life-safety systems (fire detection, emergency egress, alarms); occupant safety is unaddressed.",
+            "Life-safety equipment present but maintained ad-hoc; testing irregular.",
+            "A life-safety standard is defined but inconsistently maintained and tested.",
+            "Documented life-safety systems consistently maintained and tested for in-scope sites.",
+            "All of #3 plus monitored life-safety systems, regular drills, and audited maintenance/testing records.",
+            "All of #4 plus continuously monitored, independently inspected and attested life-safety assurance."
+          ]
+        },
+        {
+          "key": "5b",
+          "title": "Facility resilience and redundancy",
+          "weight": 0.35,
+          "anchors": [
+            "No redundancy; loss of power or cooling halts operations with no fallback.",
+            "Some redundancy exists ad-hoc; untested and incomplete.",
+            "A resilience standard (backup power, cooling redundancy) is defined but inconsistently implemented or tested.",
+            "Documented redundancy for critical in-scope facilities consistently implemented (backup power, cooling).",
+            "All of #3 plus tested failover (generator/UPS/cooling tests), measured recovery, and audited resilience.",
+            "All of #4 plus geographically/architecturally resilient facilities with independently validated continuity."
+          ]
+        },
+        {
+          "key": "5c",
+          "title": "OT/building-system integrity and failsafe",
+          "weight": 0.25,
+          "anchors": [
+            "Building/OT systems can fail or be manipulated into unsafe states with no failsafe.",
+            "Failsafe behavior addressed ad-hoc on a few systems; no standard.",
+            "An OT-integrity/failsafe standard is defined but inconsistently implemented.",
+            "Documented OT integrity and failsafe behavior consistently implemented for in-scope critical systems.",
+            "All of #3 plus monitored OT integrity with anomaly alerting and audited failsafe validation.",
+            "All of #4 plus continuously verified OT integrity with independently attested failsafe assurance."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "name": "Security",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "6a",
+          "title": "Physical surveillance and monitoring",
+          "weight": 0.4,
+          "anchors": [
+            "No physical surveillance or monitoring; physical incidents go undetected.",
+            "Some CCTV/monitoring exists ad-hoc; footage unreviewed and uncoordinated.",
+            "A physical-monitoring standard is defined but inconsistently applied; coverage has gaps.",
+            "Documented physical surveillance and monitoring consistently deployed across in-scope sites with retention.",
+            "All of #3 plus monitored alerts, integration with response, and audited coverage.",
+            "All of #4 plus analytics-driven physical monitoring (anomaly detection) with independently validated coverage."
+          ]
+        },
+        {
+          "key": "6b",
+          "title": "OT/building-system threat detection and response",
+          "weight": 0.35,
+          "anchors": [
+            "No detection or response capability for threats to building/OT systems.",
+            "OT incidents handled improvised; no monitoring or plan.",
+            "An OT detection/response standard is defined but untested and inconsistently applied.",
+            "Documented OT threat detection and response consistently maintained for in-scope building/OT systems.",
+            "All of #3 plus OT-specific monitoring (e.g., OT-aware IDS), tested response, and audited readiness.",
+            "All of #4 plus continuous OT threat monitoring with measured detection/response and independently validated readiness."
+          ]
+        },
+        {
+          "key": "6c",
+          "title": "Facility/OT vulnerability and patch management",
+          "weight": 0.25,
+          "anchors": [
+            "Building/OT systems are never patched or checked; exposure is unknown and accumulating.",
+            "Patching/hardening of OT happens ad-hoc and reactively; no standard.",
+            "An OT patch/secure-configuration standard is defined but inconsistently applied; drift common.",
+            "Documented patch and secure-baseline management consistently applied to in-scope building/OT systems.",
+            "All of #3 plus scheduled OT vulnerability assessment, tracked remediation (with compensating controls where patching is constrained), and audit.",
+            "All of #4 plus continuous OT posture management with independently attested configuration."
+          ]
+        }
+      ]
+    }
+  ]
+}

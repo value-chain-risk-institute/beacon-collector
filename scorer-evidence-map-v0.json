@@ -1,0 +1,238 @@
+{
+  "_schema": "vcri.beacon.scorer-evidence-map/v0",
+  "_status": "DRAFT v0, 2026-09-12. These leveling rules are VCRI's methodology, not the collector's. They are written down here, versioned and public, so the free reference scorer is reproducible and arguable. Every number in here is a proposal until the VCRI change log ratifies it.",
+  "_principles": [
+    "Evidence class is the ceiling. Observed evidence (collected from a system of record or a scanner) can reach level 4. Attested evidence (a third party's report) is capped at 2. Stated evidence (the subject's own claim) is capped at 1. Level 5 is never awarded by the free scorer: it requires examination.",
+    "When two items cover the same subcriterion, the higher evidence class wins even if its level is lower. An observed 50% MFA coverage beats a SOC 2 that attests MFA everywhere, and the disagreement is reported as a contradiction.",
+    "A subcriterion with no evidence scores 0 in the comparable score (same arithmetic as the questionnaire) and is excluded from the covered score. Both numbers are always shown together with the coverage percentage.",
+    "Slots the collector emits that have no home in the rubric are reported as gaps, never silently dropped or guessed."
+  ],
+  "class_caps": {
+    "observed": 4,
+    "attested": 2,
+    "stated": 1
+  },
+  "epistemic_to_class": {
+    "observed_scan": "observed",
+    "observed_export": "observed",
+    "observed": "observed",
+    "third_party_attestation": "attested",
+    "subject_claim": "stated",
+    "_note": "item-level epistemic label -> evidence class. Scanner items are observed_scan (label added to collector.py 2026-09-12; older scanner packages without the label are classed observed by mode=scanner + verified_by_collector). Context entries carry subject_claim and are never scored."
+  },
+  "slots": {
+    "technology-v1:1.1a": {
+      "rubric": "technology-v1",
+      "key": "1a",
+      "rule": {
+        "type": "steps",
+        "steps": [
+          {
+            "path": "package_inventory.present",
+            "equals": true,
+            "level": 2
+          },
+          {
+            "path": "sbom.standalone",
+            "equals": true,
+            "level": 3
+          },
+          {
+            "path": "signed_attestation.present",
+            "equals": true,
+            "level": 4
+          }
+        ]
+      }
+    },
+    "technology-v1:1.1b": {
+      "rubric": "technology-v1",
+      "key": "1b",
+      "rule": {
+        "type": "steps",
+        "steps": [
+          {
+            "path": "checks_evaluated.present",
+            "equals": true,
+            "level": 2
+          },
+          {
+            "path": "checks_evaluated.failed",
+            "equals": 0,
+            "requires": {
+              "path": "checks_evaluated.passed",
+              "gt": 0
+            },
+            "level": 3
+          }
+        ]
+      }
+    },
+    "technology-v1:4.4a": {
+      "rubric": "technology-v1",
+      "key": "4a",
+      "rule": {
+        "type": "vuln_ladder",
+        "path": "vulnerability_findings.by_severity",
+        "note": "level from the worst open severity observed by the scanner; patch POLICY evidence (export mode) can raise this later"
+      }
+    },
+    "technology-v1:2.2a": {
+      "rubric": "technology-v1",
+      "key": "2a",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "technology-v1:4.4b": {
+      "rubric": "technology-v1",
+      "key": "4b",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "technology-v1:4.4c": {
+      "rubric": "technology-v1",
+      "key": "4c",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "technology-v1:6.6a": {
+      "rubric": "technology-v1",
+      "key": "6a",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "technology-v1:6.6c": {
+      "rubric": "technology-v1",
+      "key": "6c",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "people-v1:mfa": {
+      "rubric": "people-v1",
+      "key": "2a",
+      "rule": {
+        "type": "fraction_ladder",
+        "path": "mfa.coverage_fraction",
+        "ladder": [
+          [
+            0.99,
+            4
+          ],
+          [
+            0.9,
+            3
+          ],
+          [
+            0.5,
+            2
+          ],
+          [
+            1e-06,
+            1
+          ]
+        ],
+        "else": 0
+      }
+    },
+    "people-v1:least-privilege": {
+      "rubric": "people-v1",
+      "key": "4a",
+      "rule": {
+        "type": "inverse_fraction_ladder",
+        "path": "least_privilege.privileged_fraction",
+        "ladder": [
+          [
+            0.05,
+            4
+          ],
+          [
+            0.1,
+            3
+          ],
+          [
+            0.25,
+            2
+          ],
+          [
+            0.5,
+            1
+          ]
+        ],
+        "else": 0
+      }
+    },
+    "people-v1:jml": {
+      "rubric": "people-v1",
+      "key": "2b",
+      "rule": {
+        "type": "steps",
+        "steps": [
+          {
+            "path": "jml.total_records",
+            "gt": 0,
+            "level": 1
+          },
+          {
+            "path": "jml.disabled_or_suspended_still_present",
+            "equals": 0,
+            "level": 3
+          }
+        ]
+      }
+    },
+    "process-v1:change-management": {
+      "rubric": "processes-v1",
+      "key": "5a",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "process-v1:control-effectiveness": {
+      "rubric": "processes-v1",
+      "key": "6b",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "process-v1:incident-response": {
+      "rubric": null,
+      "key": null,
+      "gap": "the collector emits this slot (SOC 2 CC7.3/CC7.4) but processes-v1 has no incident-response subcriterion; technology-v1 6b is incident detection and response on systems. Rubric or crosswalk needs a decision."
+    },
+    "data-v1:in-transit": {
+      "rubric": "data-v1",
+      "key": "4a",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "data-v1:backup-recovery": {
+      "rubric": "data-v1",
+      "key": "5b",
+      "rule": {
+        "type": "attested_present"
+      }
+    },
+    "data-v1:retention": {
+      "rubric": "data-v1",
+      "key": "5c",
+      "rule": {
+        "type": "attested_present"
+      }
+    }
+  },
+  "attested_present_level": 2,
+  "vuln_ladder": {
+    "note": "worst open severity -> level. Absence of findings on a scanned target is a fact about that scan, not proof of no vulnerabilities, hence 4 not 5.",
+    "no_findings": 4,
+    "worst_low_or_medium": 3,
+    "worst_high": 2,
+    "worst_critical": 1,
+    "no_scan": 0
+  }
+}

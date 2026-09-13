@@ -66,6 +66,30 @@ the record says exactly what was and was not obtained. Beside `package.json` you
 would months later. Rekor (public transparency log) is gated off by default because a
 Rekor entry is permanent and public; the record says so rather than pretending.
 
+## Scheduled mode (posture as a series)
+
+`scheduled.py run --config beacon-schedule.json` runs a configured list of collections
+(scanner, document, export) and keeps every sealed package under an org-owned state
+directory. Each package is chained to the previous one inside the sealed core
+(`collector.chain.prev_package_hash`), anchored at write time, and pending
+OpenTimestamps proofs are upgraded on later runs. `scheduled.py status` and
+`scheduled.py verify` (every seal, every chain link, every anchor, offline). Deploy
+templates for launchd, systemd and cron are in `deploy/`.
+
+## The free reference scorer (the other side of the schema)
+
+`score.py PACKAGE.json` verifies the package first (an invalid package is refused, not
+scored), then applies the leveling rules in `scorer-evidence-map-v0.json` against the
+mirrored VCRI rubrics in `rubrics/` and prints the free-tier score with its work shown.
+The arithmetic is the questionnaire's. Two numbers are always printed together: the
+comparable score (unscored subcriteria count as 0) and the covered score (over the
+evidence present) with the coverage percentage. Evidence class is the ceiling: observed
+evidence can reach level 4, an attestation is capped at 2, the subject's own claim at 1,
+and level 5 is never awarded by the free scorer. Observed beats attested on the same
+subcriterion and the disagreement is printed as a contradiction. Slots with no home in
+the rubric are printed as gaps. The rules are VCRI's methodology, versioned and public;
+the scorer only applies them.
+
 ## Security posture (why a public IP is fine)
 
 **The collector is outbound-only. It opens no listening ports.** `collect` shells out to Trivy
@@ -87,7 +111,7 @@ does not need:
 `collector.py` scanner mode (Trivy) · `docs.py` document mode (SOC 2 / pen-test ingest) ·
 `exportmode.py` export mode (IdP) · `enroll.py` Ed25519 identity + signing · `merge.py`
 multi-box aggregation · `beaconlib.py` shared seal/sign/verify · `report.py` local report ·
-`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP) · `anchors.py` + `anchor.py` timestamp/OTS/Rekor anchoring and offline verify.
+`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP) · `anchors.py` + `anchor.py` timestamp/OTS/Rekor anchoring and offline verify · `scheduled.py` scheduled mode (series, chain, upgrade) · `score.py` free reference scorer (+ `scorer-evidence-map-v0.json`, `rubrics/`).
 
 `SPEC.md` product spec + invariants · `EVIDENCE-SCHEMA-and-source-map-v0.1.md` data spec ·
 `JAWNCON-MVP-PLAN.md` the deployment plan.

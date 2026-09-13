@@ -1,0 +1,320 @@
+{
+  "id": "processes-v1",
+  "title": "VCRI Processes Asset Assessment Methodology v1",
+  "source": "2026-06-13-processes-asset-assessment-methodology-v1.md",
+  "scaleMax": 5,
+  "hardFail": {
+    "belowDimension": 2,
+    "capGrade": "C"
+  },
+  "grades": [
+    {
+      "grade": "A",
+      "min": 4.25,
+      "max": 5,
+      "meaning": "Best-in-class process posture. Documented, owned, enforced, and measured processes with segregation of duties and continuous improvement across all dimensions. No critical findings."
+    },
+    {
+      "grade": "B",
+      "min": 3.5,
+      "max": 4.24,
+      "meaning": "Solid process posture. Documented and owned processes across most dimensions; minor gaps in 1-2 areas with remediation paths defined. Suitable for production reliance with stated caveats."
+    },
+    {
+      "grade": "C",
+      "min": 2.75,
+      "max": 3.49,
+      "meaning": "Acceptable with conditions. Notable gaps in 2-3 dimensions; remediation roadmap required. Not suitable for high-assurance reliance without compensating controls."
+    },
+    {
+      "grade": "D",
+      "min": 2,
+      "max": 2.74,
+      "meaning": "Significant gaps across multiple dimensions. Operational risk is material; remediation required before high-assurance reliance."
+    },
+    {
+      "grade": "F",
+      "min": 0,
+      "max": 1.999,
+      "meaning": "Material failure of process posture. Tribal knowledge and ad-hoc execution dominate; reliance not recommended in current state."
+    }
+  ],
+  "dimensions": [
+    {
+      "n": 1,
+      "name": "Trust",
+      "weight": 0.2,
+      "subcriteria": [
+        {
+          "key": "1a",
+          "title": "Process documentation and standardization",
+          "weight": 0.4,
+          "anchors": [
+            "No process documentation; procedures are tribal knowledge held by individuals.",
+            "Some processes documented ad-hoc; documentation is partial, stale, and inconsistent.",
+            "A documentation standard is defined but inconsistently applied; key processes remain undocumented.",
+            "In-scope processes documented to a consistent standard and kept current; runbooks exist for operational procedures.",
+            "All of #3 plus a managed process framework, periodic documentation review, and audited coverage of in-scope processes.",
+            "All of #4 plus a continuously maintained, org-wide standardized process library with independently validated completeness."
+          ]
+        },
+        {
+          "key": "1b",
+          "title": "Process ownership and accountability",
+          "weight": 0.35,
+          "anchors": [
+            "No process owners; responsibility for any given process is unclear.",
+            "Ownership assumed informally for some processes; many have no named owner.",
+            "An ownership model is defined but inconsistently assigned; gaps and overlaps persist.",
+            "Every in-scope process has a documented, accountable owner consistently maintained.",
+            "All of #3 plus owner performance/accountability measured, escalation paths defined, and audited ownership currency.",
+            "All of #4 plus org-wide ownership governance with independently attested accountability."
+          ]
+        },
+        {
+          "key": "1c",
+          "title": "Process change provenance and version control",
+          "weight": 0.25,
+          "anchors": [
+            "Process changes happen without record; no history of who changed what or why.",
+            "Some changes noted ad-hoc; no version control or rationale capture.",
+            "A change-provenance standard is defined but inconsistently followed; history is incomplete.",
+            "Process changes consistently version-controlled with author, date, and rationale captured.",
+            "All of #3 plus enforced change provenance integrated with approval workflow and audited history integrity.",
+            "All of #4 plus cryptographically attested, immutable process-change provenance independently verifiable."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "name": "Identity",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "2a",
+          "title": "Process ownership-to-role mapping and RACI",
+          "weight": 0.4,
+          "anchors": [
+            "No RACI or role mapping; it is unclear who is responsible, accountable, consulted, or informed.",
+            "RACI exists informally for a few processes; mostly undefined.",
+            "A RACI standard is defined but inconsistently applied; roles drift from reality.",
+            "Documented RACI consistently maintained for in-scope processes; roles mapped to verified identities.",
+            "All of #3 plus automated workflow routing tied to roles and audited RACI accuracy.",
+            "All of #4 plus continuously governed role-to-process mapping with independently attested accuracy."
+          ]
+        },
+        {
+          "key": "2b",
+          "title": "Step-level attribution to verified identity",
+          "weight": 0.35,
+          "anchors": [
+            "Process steps cannot be attributed to a specific actor; execution is anonymous.",
+            "Some steps logged to a user ad-hoc; attribution is partial and unreliable.",
+            "An attribution standard is defined but inconsistently captured across process steps.",
+            "In-scope process steps consistently attributed to verified identities with logged execution.",
+            "All of #3 plus enforced identity verification at each consequential step and audited attribution completeness.",
+            "All of #4 plus cryptographically attributable step execution independently verifiable."
+          ]
+        },
+        {
+          "key": "2c",
+          "title": "Non-repudiation on approvals",
+          "weight": 0.25,
+          "anchors": [
+            "Approvals are informal and deniable; no record binds an approver to a decision.",
+            "Approvals captured ad-hoc (email, verbal); no consistent non-repudiation.",
+            "An approval-record standard is defined but inconsistently applied; integrity is weak.",
+            "Approvals consistently recorded and attributable to the approving identity for in-scope processes.",
+            "All of #3 plus tamper-resistant approval records integrated with workflow and audited integrity.",
+            "All of #4 plus digitally signed, non-repudiable approvals with independently verifiable integrity."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "name": "Privacy",
+      "weight": 0.1,
+      "subcriteria": [
+        {
+          "key": "3a",
+          "title": "Privacy impact assessment in process design",
+          "weight": 0.4,
+          "anchors": [
+            "New or changed processes are deployed with no privacy review.",
+            "Privacy considered informally for some high-risk processes; no defined trigger.",
+            "A PIA requirement is defined but inconsistently performed before process deployment.",
+            "Documented PIA consistently performed before deploying or materially changing in-scope processes.",
+            "All of #3 plus automated PIA triggers on process changes and audited PIA completion/quality.",
+            "All of #4 plus continuous privacy-by-design enforcement in process creation with independently validated coverage."
+          ]
+        },
+        {
+          "key": "3b",
+          "title": "Data minimization in workflows",
+          "weight": 0.35,
+          "anchors": [
+            "Workflows collect and pass whatever data is convenient, without minimization.",
+            "Minimization applied ad-hoc in some workflows; no standard.",
+            "A minimization standard for workflow design is defined but inconsistently applied.",
+            "Data minimization documented and consistently applied in in-scope workflow design.",
+            "All of #3 plus measured data-handled-vs-necessary per workflow and audited minimization adherence.",
+            "All of #4 plus self-minimizing workflows with independently validated minimization."
+          ]
+        },
+        {
+          "key": "3c",
+          "title": "Privacy-by-design in process templates",
+          "weight": 0.25,
+          "anchors": [
+            "Process templates contain no privacy controls; privacy is an afterthought.",
+            "A few templates mention privacy ad-hoc; no consistent embedding.",
+            "Privacy-by-design template requirements are defined but inconsistently embedded.",
+            "Privacy controls consistently embedded in in-scope process templates and reused.",
+            "All of #3 plus enforced privacy-by-design template gates and audited template compliance.",
+            "All of #4 plus continuously improved privacy-by-design templates with independently validated effectiveness."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "name": "Protection",
+      "weight": 0.25,
+      "subcriteria": [
+        {
+          "key": "4a",
+          "title": "Segregation of duties and approval gates",
+          "weight": 0.4,
+          "anchors": [
+            "No segregation of duties; a single actor can initiate, approve, and execute sensitive actions.",
+            "SoD and approvals applied ad-hoc where compliance forces it; broad gaps remain.",
+            "An SoD/approval-gate standard is defined but inconsistently enforced across sensitive processes.",
+            "Segregation of duties and approval gates documented and consistently enforced for in-scope sensitive processes.",
+            "All of #3 plus automated SoD-violation detection, enforced approval routing, and audited control adherence.",
+            "All of #4 plus continuous SoD monitoring and independently attested control enforcement."
+          ]
+        },
+        {
+          "key": "4b",
+          "title": "Process control framework",
+          "weight": 0.35,
+          "anchors": [
+            "No process control framework; controls, if any, are uncoordinated.",
+            "Some controls exist ad-hoc; no framework mapping controls to risks.",
+            "A control framework is defined but inconsistently implemented; coverage is partial.",
+            "A documented process control framework consistently implemented across in-scope processes.",
+            "All of #3 plus controls mapped to risks, control testing on a cadence, and audited framework coverage.",
+            "All of #4 plus a self-improving control framework with independently attested control design and operation."
+          ]
+        },
+        {
+          "key": "4c",
+          "title": "Process exception and deviation handling",
+          "weight": 0.25,
+          "anchors": [
+            "Process deviations happen silently; exceptions are neither tracked nor reviewed.",
+            "Exceptions handled ad-hoc; no consistent record or approval.",
+            "An exception-handling standard is defined but inconsistently followed; deviations under-recorded.",
+            "Documented exception/deviation handling consistently applied; exceptions approved and tracked.",
+            "All of #3 plus automated deviation detection with risk scoring and audited exception closure.",
+            "All of #4 plus continuous deviation analytics driving process hardening, independently validated."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Safety",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "5a",
+          "title": "Change management",
+          "weight": 0.4,
+          "anchors": [
+            "Changes to systems and processes happen without change control; outages from unmanaged change are common.",
+            "Change tracked ad-hoc in tickets; no consistent review or approval.",
+            "A change-management standard is defined but inconsistently followed; emergency changes bypass it.",
+            "Documented change management (request, review, approval, rollback) consistently applied to in-scope changes.",
+            "All of #3 plus a change advisory function, measured change-success/incident rates, and audited change adherence.",
+            "All of #4 plus continuously improved, largely automated change governance with independently validated effectiveness."
+          ]
+        },
+        {
+          "key": "5b",
+          "title": "Business continuity and process recovery",
+          "weight": 0.35,
+          "anchors": [
+            "No continuity planning; a disruption halts critical processes indefinitely.",
+            "Continuity considered informally; no documented plan or recovery objectives.",
+            "A continuity/recovery standard with objectives is defined but inconsistently maintained and untested.",
+            "Documented business-continuity plans with recovery objectives consistently maintained for critical in-scope processes.",
+            "All of #3 plus tested continuity (exercises), measured recovery against objectives, and audited plan currency.",
+            "All of #4 plus regularly exercised, resilient continuity with independently validated recovery performance."
+          ]
+        },
+        {
+          "key": "5c",
+          "title": "Process integrity and deviation detection",
+          "weight": 0.25,
+          "anchors": [
+            "No assurance that processes execute as designed; silent process failures go unnoticed.",
+            "Process correctness checked ad-hoc and manually; no standard.",
+            "A process-integrity standard is defined but inconsistently applied; monitoring is sparse.",
+            "Process integrity verified consistently for in-scope processes (defined checks that the process did what it should).",
+            "All of #3 plus automated detection of process deviation/failure with alerting and audited integrity coverage.",
+            "All of #4 plus process mining and continuous integrity analytics with independently validated assurance."
+          ]
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "name": "Security",
+      "weight": 0.15,
+      "subcriteria": [
+        {
+          "key": "6a",
+          "title": "Process control monitoring",
+          "weight": 0.4,
+          "anchors": [
+            "Process-control execution is not monitored; nobody knows if controls are running.",
+            "Some control execution observed ad-hoc; no consistent monitoring.",
+            "A control-monitoring standard is defined but inconsistently applied; coverage has gaps.",
+            "Process-control execution consistently monitored and recorded for in-scope processes.",
+            "All of #3 plus alerting on control failures/bypass, with monitoring coverage audited.",
+            "All of #4 plus continuous, analytics-driven control monitoring with independently validated coverage."
+          ]
+        },
+        {
+          "key": "6b",
+          "title": "Control effectiveness measurement and audit",
+          "weight": 0.35,
+          "anchors": [
+            "Control effectiveness is never measured; controls are assumed to work.",
+            "Effectiveness reviewed ad-hoc; no metrics or schedule.",
+            "An effectiveness-measurement standard is defined but inconsistently executed.",
+            "Control effectiveness consistently measured and internally audited on a defined cadence.",
+            "All of #3 plus quantified control-effectiveness metrics, deviation risk scoring, and tracked remediation.",
+            "All of #4 plus independent (external) audit of control effectiveness with attested results."
+          ]
+        },
+        {
+          "key": "6c",
+          "title": "Continuous process improvement and mining",
+          "weight": 0.25,
+          "anchors": [
+            "Processes are never reviewed for improvement; inefficiency and risk accumulate.",
+            "Improvement happens reactively after incidents only; no systematic review.",
+            "A process-improvement standard is defined but inconsistently applied.",
+            "Documented continuous-improvement practice consistently applied to in-scope processes.",
+            "All of #3 plus data-driven improvement (process mining/metrics) and audited improvement outcomes.",
+            "All of #4 plus self-optimizing processes with automated improvement recommendations, independently validated."
+          ]
+        }
+      ]
+    }
+  ]
+}

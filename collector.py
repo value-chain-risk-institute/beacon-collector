@@ -138,6 +138,10 @@ def build_item(slot: str, kind: str, observation: dict, raw_hash: str,
         "source": {"tool": "trivy", "kind": kind, "raw_sha256": raw_hash},
         "provenance": provenance,   # WHICH box this evidence came from + how it was reached
         "observation": observation,
+        # Item-level evidence class, same vocabulary as document and export modes, so a
+        # consumer (score.py) never has to infer class from the mode. Added 2026-09-12.
+        "epistemic": "observed_scan",
+        "verified_by_collector": True,
         "context": context,
         "completeness": completeness(observation, EXPECTED[slot]),
         "freshness": {"collected_utc": now, "evidence_age_seconds": 0,
