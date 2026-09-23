@@ -16,8 +16,10 @@
  },
  "package": {
   "schema": "vcri.beacon.evidence-package/v0",
-  "hash": null,
-  "sealed_utc": null,
+  "package_hash": "98dace6564503d9e3ea66602791efe206cba3b9cee17db41f53a1ecf9d2208ad",
+  "merkle_root": "c29f0ea3e0f911e161b9d8956716d181ef2362be204d58ecd50be0b2e2a96c07",
+  "signature_alg": "none",
+  "collected_utc": "2026-09-23T01:39:39.619461+00:00",
   "anchor": {
    "state": "unanchored",
    "record": "package.json.anchors.json",

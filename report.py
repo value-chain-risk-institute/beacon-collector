@@ -182,7 +182,7 @@ def render_json(pkg, fw, rows):
         "schema": "vcri.beacon.framework-coverage/v0",
         "framework": {"key": fw.get("version"), "name": fw.get("name"), "status": fw.get("status"), "source": fw.get("source")},
         "subject": pkg.get("subject", {}),
-        "package": {"schema": pkg.get("schema"), "hash": seal.get("hash"), "sealed_utc": seal.get("sealed_utc") or pkg.get("collected_utc"), "anchor": seal.get("anchor")},
+        "package": {"schema": pkg.get("schema"), "package_hash": seal.get("package_hash") or seal.get("hash"), "merkle_root": seal.get("merkle_root"), "signature_alg": (seal.get("signature") or {}).get("alg"), "collected_utc": max([it.get("collected_utc", "") for it in pkg.get("items", [])] or [None]), "anchor": seal.get("anchor")},
         "not_this": fw.get("not_this", []),
         "classes": fw.get("classes", {}),
         "rows": rows,
@@ -220,8 +220,10 @@ def render_html(pkg, fw, rows):
     """
     h = ["<!doctype html><html><head><meta charset=\"utf-8\"><title>%s: evidence coverage</title><style>%s</style></head><body><main>" % (_h.escape(fw.get("name", "framework")), css)]
     h.append("<h1>Evidence coverage against %s</h1>" % _h.escape(fw.get("name", "")))
-    h.append("<p class=\"sub\"><b>Subject:</b> %s &nbsp;·&nbsp; <b>Package:</b> %s &nbsp;·&nbsp; <b>Sealed:</b> %s &nbsp;·&nbsp; <b>Crosswalk:</b> %s</p>" % (
-        _h.escape(str(subj.get("name", "subject"))), _h.escape(str(seal.get("hash", "?"))[:24]) + "…", _h.escape(str(seal.get("sealed_utc") or pkg.get("collected_utc") or "?")), _h.escape(str(fw.get("version", "")))))
+    phash = seal.get("package_hash") or seal.get("hash") or "?"
+    sealed = seal.get("sealed_utc") or pkg.get("collected_utc") or max([it.get("collected_utc", "") for it in pkg.get("items", [])] or ["?"])
+    h.append("<p class=\"sub\"><b>Subject:</b> %s &nbsp;·&nbsp; <b>Package hash:</b> <code>%s</code> &nbsp;·&nbsp; <b>Collected:</b> %s &nbsp;·&nbsp; <b>Seal:</b> %s, %s &nbsp;·&nbsp; <b>Crosswalk:</b> %s</p>" % (
+        _h.escape(str(subj.get("name", "subject"))), _h.escape(str(phash)[:16]) + "…", _h.escape(str(sealed)), _h.escape(str(seal.get("alg", "?"))), _h.escape(str((seal.get("signature") or {}).get("alg", "unsigned"))), _h.escape(str(fw.get("version", "")))))
     h.append("<div class=\"warn\"><b>What this is, and is not.</b> This shows where the subject's sealed evidence speaks to each requirement, and the class of evidence behind it: "
              "<span class=\"pill obs\">Observed</span> collected from a system of record or a scanner; <span class=\"pill att\">Attested</span> a third party's report, ingested and sealed; "
              "<span class=\"pill sta\">Stated</span> the subject's own claim, sealed but unverified. " + " ".join(_h.escape(x) for x in fw.get("not_this", [])) +
