@@ -1,9 +1,9 @@
 {
  "schema": "vcri.beacon.framework-coverage/v0",
- "framework": {
+ "overlay": {
   "key": "vcri.crosswalk.nist-sp800-171r2/0.1",
   "name": "NIST SP 800-171 Rev. 2 (110 security requirements)",
-  "status": "INDICATIVE v0.1, authored 2026-09-22 by Cairn Viktor for The Value Chain Risk Institute. Maps each requirement to the evidence slots the Beacon Collector emits today. A mapped slot means the collector can produce evidence that speaks to the requirement; it never means the requirement is met. Requirements with no slot ('manual') need Recorded or Stated evidence attached by the organisation (policy ingest via docs.py, or a sealed note). Versioned; changes go through the public change log.",
+  "status": "INDICATIVE v0.1, authored 2026-09-22 by Cairn Viktor for The Value Chain Risk Institute. An OVERLAY: this standard laid over the same sealed evidence. Maps each requirement to the evidence slots the Beacon Collector emits today. A mapped slot means the collector can produce evidence that speaks to the requirement; it never means the requirement is met. Requirements with no slot ('manual') need Recorded or Stated evidence attached by the organisation (policy ingest via docs.py, or a sealed note). Versioned; changes go through the public change log.",
   "source": {
    "requirements": "NIST CSRC, sp800-171r2-security-reqs.csv (downloaded 2026-09-22), reproduced verbatim",
    "file": "crosswalks/nist-sp800-171r2-security-reqs.source.csv"

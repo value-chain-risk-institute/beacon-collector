@@ -142,13 +142,13 @@ multi-box aggregation · `beaconlib.py` shared seal/sign/verify · `report.py` l
 
 Collector: open source (self-hosted). Schema `vcri.beacon.evidence-package/v0`: CC-BY, VCRI.
 
-## Framework coverage bundles (report.py)
+## Overlays and coverage bundles (report.py)
 
 `report.py PACKAGE.json --framework <name> [--md F] [--html F] [--json F] [--bundle DIR]`
 
 Reads a sealed package (refuses a tampered one) and shows, per framework requirement, whether the package holds evidence that speaks to it and the class of that evidence: Observed (system of record or scanner), Attested (a third party's report, sealed), Stated (the subject's own claim, sealed, unverified). No score; never "compliant"; a map, not a blessing.
 
-Crosswalks live in `crosswalks/*.json`, versioned and public. Shipped: `cra-annex-i` (inline), `nist-sp800-171r2` (all 110 Rev. 2 requirements, from NIST's own list in `crosswalks/nist-sp800-171r2-security-reqs.source.csv`; 64 have a collector evidence slot today, 46 need Recorded or Stated evidence attached). `--bundle` writes a directory a third party can open: the package (and blobs), the coverage in md/json/html, and a README with the verify command.
+Standards are OVERLAYS: the same sealed evidence, with a standard's requirements laid over it. One collector, collect once; overlays live in `overlays/*.json`, versioned and public. (A crosswalk is the narrower thing: a map between two standards' requirement IDs, so one pointer satisfies several overlays.) Shipped: `cra-annex-i` (inline), `nist-sp800-171r2` (all 110 Rev. 2 requirements, from NIST's own list in `overlays/nist-sp800-171r2-security-reqs.source.csv`; 64 have a collector evidence slot today, 46 need Recorded or Stated evidence attached). `--bundle` writes a directory a third party can open: the package (and blobs), the coverage in md/json/html, and a README with the verify command.
 
 Sample: `python3 samples/make_sample_171.py && python3 report.py samples/sample-171-package.json --framework nist-sp800-171r2 --bundle samples/bundle-171-sample` (synthetic supplier, every item labelled synthetic).
 
