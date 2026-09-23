@@ -76,6 +76,21 @@ CRA_ANNEX_I = {
 }
 FRAMEWORKS = {"cra-annex-i": CRA_ANNEX_I}
 
+# Versioned crosswalks shipped as files (public, arguable, diffable). Key = file stem.
+_CW_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crosswalks")
+if os.path.isdir(_CW_DIR):
+    for _fn in sorted(os.listdir(_CW_DIR)):
+        if _fn.endswith(".json") and not _fn.endswith(".source.json"):
+            try:
+                with open(os.path.join(_CW_DIR, _fn)) as _f:
+                    _fw = json.load(_f)
+                if isinstance(_fw, dict) and "controls" in _fw:
+                    FRAMEWORKS[_fn[:-5]] = _fw
+            except Exception:
+                pass
+
+CLASS_LABEL = {"observed": "Observed", "attested": "Attested", "subject_claim": "Stated", "none": "None"}
+
 
 def slot_present(item: dict) -> bool:
     obs = item.get("observation", {})
@@ -100,7 +115,9 @@ def build(pkg: dict, fw: dict):
             for it in by_slot.get(slot, []):
                 mapped.append(it)
         present_items = [it for it in mapped if slot_present(it)]
-        if not mapped:
+        if not c.get("slots"):
+            coverage, grade, srcs = "manual", "none", []
+        elif not mapped:
             coverage, grade, srcs = "absent", "none", []
         elif present_items:
             grade = strongest([item_grade(it) for it in present_items])
@@ -111,13 +128,14 @@ def build(pkg: dict, fw: dict):
         else:
             coverage, grade, srcs = "absent", "none", []
         rows.append({"id": c["id"], "t": c["t"], "coverage": coverage,
-                     "grade": grade, "sources": srcs})
+                     "grade": grade, "sources": srcs,
+                     "family": c.get("family"), "kind": c.get("kind"), "slots": list(c.get("slots", []))})
     return rows
 
 
 def render_md(pkg, fw, rows):
     subj = pkg.get("subject", {}).get("name", "subject")
-    counts = {"covered": 0, "partial": 0, "absent": 0}
+    counts = {"covered": 0, "partial": 0, "absent": 0, "manual": 0}
     gcounts = {g: 0 for g in GRADE_ORDER}
     for r in rows:
         counts[r["coverage"]] += 1
@@ -134,8 +152,8 @@ def render_md(pkg, fw, rows):
                "verification (a Cairn Risk Co. engagement) upgrades `attested` and `subject_claim` "
                "lines toward `observed`.")
     out.append("")
-    out.append("**Coverage:** %d covered · %d partial · %d absent  \n**Evidence grade:** %d observed · %d attested · %d subject-claim · %d none" % (
-        counts["covered"], counts["partial"], counts["absent"],
+    out.append("**Coverage:** %d covered · %d partial · %d absent · %d no automated source  \n**Evidence grade:** %d observed · %d attested · %d stated · %d none" % (
+        counts["covered"], counts["partial"], counts["absent"], counts["manual"],
         gcounts["observed"], gcounts["attested"], gcounts["subject_claim"], gcounts["none"]))
     out.append("")
     out.append("| Control | Coverage | Evidence grade | Source evidence |")
@@ -158,11 +176,109 @@ def render_md(pkg, fw, rows):
     return "\n".join(out)
 
 
+def render_json(pkg, fw, rows):
+    seal = pkg.get("seal", {}) or {}
+    return {
+        "schema": "vcri.beacon.framework-coverage/v0",
+        "framework": {"key": fw.get("version"), "name": fw.get("name"), "status": fw.get("status"), "source": fw.get("source")},
+        "subject": pkg.get("subject", {}),
+        "package": {"schema": pkg.get("schema"), "hash": seal.get("hash"), "sealed_utc": seal.get("sealed_utc") or pkg.get("collected_utc"), "anchor": seal.get("anchor")},
+        "not_this": fw.get("not_this", []),
+        "classes": fw.get("classes", {}),
+        "rows": rows,
+    }
+
+
+def render_html(pkg, fw, rows):
+    import html as _h
+    subj = pkg.get("subject", {}) or {}
+    seal = pkg.get("seal", {}) or {}
+    fams = []
+    for r in rows:
+        f = r.get("family") or "Requirements"
+        if f not in fams:
+            fams.append(f)
+    def cls(r):
+        return {"observed": "obs", "attested": "att", "subject_claim": "sta", "none": "non"}[r["grade"]]
+    tot = {"covered": 0, "partial": 0, "absent": 0, "manual": 0}
+    for r in rows:
+        tot[r["coverage"]] += 1
+    css = """
+    body{font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#1a1a1a;margin:0;background:#f3f4f6}
+    main{max-width:1000px;margin:0 auto;padding:28px 20px 60px;background:#fff}
+    h1{font-size:22px;margin:0 0 4px;color:#0b2545}h2{font-size:15px;margin:22px 0 6px;color:#0b2545;border-bottom:1px solid #e3e3e3;padding-bottom:3px}
+    .sub{color:#555;font-size:12px;margin:0 0 14px}
+    .warn{background:#fff7e6;border-left:4px solid #b8860b;padding:8px 12px;margin:10px 0 16px;font-size:12.5px}
+    .kpis{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.kpi{border:1px solid #e3e3e3;border-radius:8px;padding:8px 12px;min-width:120px}.kpi b{display:block;font-size:18px;color:#0b2545}.kpi span{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.4px}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0 10px}th,td{border:1px solid #e3e3e3;padding:5px 7px;text-align:left;vertical-align:top}th{background:#f6f6f2}
+    td.id{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;font-weight:600}
+    .pill{display:inline-block;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600}
+    .obs{background:#e6f2ec;color:#1f6f4a}.att{background:#fdf1dc;color:#8a5a00}.sta{background:#f5e6e6;color:#8a1c1c}.non{background:#eee;color:#666}
+    .cov-covered{color:#1f6f4a;font-weight:600}.cov-partial{color:#8a5a00;font-weight:600}.cov-absent{color:#8a1c1c;font-weight:600}.cov-manual{color:#666}
+    .foot{font-size:11px;color:#666;margin-top:26px;border-top:1px solid #e3e3e3;padding-top:8px}
+    @media print{body{background:#fff}main{padding:0}}
+    """
+    h = ["<!doctype html><html><head><meta charset=\"utf-8\"><title>%s: evidence coverage</title><style>%s</style></head><body><main>" % (_h.escape(fw.get("name", "framework")), css)]
+    h.append("<h1>Evidence coverage against %s</h1>" % _h.escape(fw.get("name", "")))
+    h.append("<p class=\"sub\"><b>Subject:</b> %s &nbsp;·&nbsp; <b>Package:</b> %s &nbsp;·&nbsp; <b>Sealed:</b> %s &nbsp;·&nbsp; <b>Crosswalk:</b> %s</p>" % (
+        _h.escape(str(subj.get("name", "subject"))), _h.escape(str(seal.get("hash", "?"))[:24]) + "…", _h.escape(str(seal.get("sealed_utc") or pkg.get("collected_utc") or "?")), _h.escape(str(fw.get("version", "")))))
+    h.append("<div class=\"warn\"><b>What this is, and is not.</b> This shows where the subject's sealed evidence speaks to each requirement, and the class of evidence behind it: "
+             "<span class=\"pill obs\">Observed</span> collected from a system of record or a scanner; <span class=\"pill att\">Attested</span> a third party's report, ingested and sealed; "
+             "<span class=\"pill sta\">Stated</span> the subject's own claim, sealed but unverified. " + " ".join(_h.escape(x) for x in fw.get("not_this", [])) +
+             " Independent verification upgrades Attested and Stated lines toward Observed.</div>")
+    h.append("<div class=\"kpis\"><div class=\"kpi\"><b>%d</b><span>requirements</span></div><div class=\"kpi\"><b>%d</b><span>covered</span></div><div class=\"kpi\"><b>%d</b><span>partial</span></div><div class=\"kpi\"><b>%d</b><span>no evidence yet</span></div><div class=\"kpi\"><b>%d</b><span>no automated source</span></div></div>" % (
+        len(rows), tot["covered"], tot["partial"], tot["absent"], tot["manual"]))
+    for fam in fams:
+        frows = [r for r in rows if (r.get("family") or "Requirements") == fam]
+        c = sum(1 for r in frows if r["coverage"] == "covered"); pth = sum(1 for r in frows if r["coverage"] == "partial")
+        h.append("<h2>%s <span style=\"font-weight:400;color:#666;font-size:12px\">%d requirements · %d covered · %d partial</span></h2>" % (_h.escape(fam), len(frows), c, pth))
+        h.append("<table><tr><th>Req.</th><th>Requirement</th><th>Kind</th><th>Coverage</th><th>Evidence class</th><th>Evidence slots</th></tr>")
+        for r in frows:
+            covtxt = {"covered": "covered", "partial": "partial", "absent": "no evidence yet", "manual": "no automated source; attach Recorded or Stated evidence"}[r["coverage"]]
+            h.append("<tr><td class=\"id\">%s</td><td>%s</td><td>%s</td><td class=\"cov-%s\">%s</td><td><span class=\"pill %s\">%s</span></td><td>%s</td></tr>" % (
+                _h.escape(r["id"]), _h.escape(r["t"]), _h.escape(r.get("kind") or ""), r["coverage"], covtxt, cls(r), CLASS_LABEL[r["grade"]],
+                _h.escape(", ".join(r["sources"]) if r["sources"] else (", ".join(r.get("slots", [])) + " (mapped, no evidence in package)" if r.get("slots") else "—"))))
+        h.append("</table>")
+    h.append("<p class=\"foot\">Generated by the Beacon Collector (collect, seal, send; never rates). Crosswalk %s. %s Package schema %s. The Value Chain Risk Institute, CC BY 4.0.</p>" % (
+        _h.escape(str(fw.get("version", ""))), _h.escape(str(fw.get("status", ""))), _h.escape(str(pkg.get("schema", "?")))))
+    h.append("</main></body></html>")
+    return "\n".join(h)
+
+
+def write_bundle(pkg, pkg_path, fw, rows, out_dir):
+    """An evidence bundle a third party can open: the sealed package (and blobs if present),
+    the coverage report in three forms, and a README that says what it is and how to verify it."""
+    import shutil
+    os.makedirs(out_dir, exist_ok=True)
+    shutil.copy2(pkg_path, os.path.join(out_dir, "package.json"))
+    blob_dir = os.path.join(os.path.dirname(os.path.abspath(pkg_path)), "blobs")
+    if os.path.isdir(blob_dir):
+        dst = os.path.join(out_dir, "blobs")
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        shutil.copytree(blob_dir, dst)
+    with open(os.path.join(out_dir, "coverage.json"), "w") as f:
+        json.dump(render_json(pkg, fw, rows), f, indent=1)
+    with open(os.path.join(out_dir, "coverage.md"), "w") as f:
+        f.write(render_md(pkg, fw, rows))
+    with open(os.path.join(out_dir, "index.html"), "w") as f:
+        f.write(render_html(pkg, fw, rows))
+    with open(os.path.join(out_dir, "README.md"), "w") as f:
+        f.write("# Evidence bundle: %s\n\n" % fw.get("name", ""))
+        f.write("Contents: `package.json` (the sealed evidence package; `blobs/` if raw tool output was captured), `coverage.json`, `coverage.md`, `index.html` (the same coverage report, three forms).\n\n")
+        f.write("Verify the seal before trusting anything here: `python3 collector.py verify package.json` (or `beaconlib.verify_package`). A tampered package fails closed.\n\n")
+        f.write("This bundle shows where sealed evidence speaks to each requirement and the class of that evidence. %s\n" % " ".join(fw.get("not_this", [])))
+    return out_dir
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("package")
     ap.add_argument("--framework", default="cra-annex-i", choices=list(FRAMEWORKS))
     ap.add_argument("--md")
+    ap.add_argument("--html")
+    ap.add_argument("--json")
+    ap.add_argument("--bundle", help="write an evidence bundle directory (package + coverage in md/json/html + README)")
     a = ap.parse_args()
 
     pkg = json.load(open(a.package))
@@ -181,6 +297,14 @@ def main():
     if a.md:
         open(a.md, "w").write(md + "\n")
         print("report -> " + a.md)
+    if a.html:
+        open(a.html, "w").write(render_html(pkg, fw, rows))
+        print("html -> " + a.html)
+    if a.json:
+        json.dump(render_json(pkg, fw, rows), open(a.json, "w"), indent=1)
+        print("json -> " + a.json)
+    if a.bundle:
+        print("bundle -> " + write_bundle(pkg, a.package, fw, rows, a.bundle))
     # console summary
     cov = sum(1 for r in rows if r["coverage"] == "covered")
     print("%s vs %s: %d/%d controls covered" % (

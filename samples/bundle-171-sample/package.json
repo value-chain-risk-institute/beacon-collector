@@ -1,0 +1,280 @@
+{
+ "schema": "vcri.beacon.evidence-package/v0",
+ "subject": {
+  "name": "Example Machining LLC (synthetic)",
+  "scope": "engineering network handling CUI",
+  "sector": "defense sub-tier supplier"
+ },
+ "collector": {
+  "name": "beacon-collector",
+  "version": "sample",
+  "note": "SYNTHETIC package for the 800-171 coverage bundle demo; not a real organisation"
+ },
+ "items": [
+  {
+   "subcriterion": "technology-v1:1.1a",
+   "mode": "scanner",
+   "epistemic": "observed_scan",
+   "tool": "trivy",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619330+00:00",
+   "observation": {
+    "package_inventory": {
+     "present": true,
+     "count": 412
+    },
+    "sbom": {
+     "standalone": true,
+     "format": "CycloneDX 1.6"
+    },
+    "signed_attestation": {
+     "present": false
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "0477f6f4a1ce3309aa9035abd387639eca5aec960ce45d52076d005b813a9266"
+  },
+  {
+   "subcriterion": "technology-v1:1.1b",
+   "mode": "scanner",
+   "epistemic": "observed_scan",
+   "tool": "openscap",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619443+00:00",
+   "observation": {
+    "checks_evaluated": {
+     "present": true,
+     "passed": 187,
+     "failed": 6,
+     "profile": "CIS Ubuntu 22.04 L1"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "e6b06d2315284cc5354a7c4d82e78ce199d73f89f52ec6897172619cd8bf59d0"
+  },
+  {
+   "subcriterion": "technology-v1:4.4a",
+   "mode": "scanner",
+   "epistemic": "observed_scan",
+   "tool": "trivy",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619446+00:00",
+   "observation": {
+    "vulnerability_findings": {
+     "present": true,
+     "by_severity": {
+      "critical": 0,
+      "high": 3,
+      "medium": 41,
+      "low": 88
+     },
+     "fix_available": 39
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "8fdf653231116e86e65f1b5ecf97b5184c28c4dbd8613698c35af77783f9f69d"
+  },
+  {
+   "subcriterion": "people-v1:mfa",
+   "mode": "export",
+   "epistemic": "observed_export",
+   "tool": "okta-export",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619448+00:00",
+   "observation": {
+    "mfa": {
+     "present": true,
+     "coverage_fraction": 0.96,
+     "total_users": 48,
+     "enrolled": 46
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "b0c369a0a6d50099a5fa8d3dc27380f95d9df7425fe16180f4393cb60ab190dc"
+  },
+  {
+   "subcriterion": "people-v1:jml",
+   "mode": "export",
+   "epistemic": "observed_export",
+   "tool": "okta-export",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619450+00:00",
+   "observation": {
+    "jml": {
+     "present": true,
+     "total_records": 61,
+     "disabled_or_suspended_still_present": 0,
+     "last_deprovision_days": 3
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "db738498aa977d87f3a1aeb697b84a3f2624aa8615b17072a78b38b5a2b5ad7f"
+  },
+  {
+   "subcriterion": "people-v1:least-privilege",
+   "mode": "export",
+   "epistemic": "observed_export",
+   "tool": "okta-export",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619451+00:00",
+   "observation": {
+    "least_privilege": {
+     "present": true,
+     "privileged_fraction": 0.08,
+     "admins": 4,
+     "total": 48
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "df4e59d5cb0ee4829323bb8fe2a139532780ad3c0860816916c321441b2167b8"
+  },
+  {
+   "subcriterion": "technology-v1:6.6a",
+   "mode": "scanner",
+   "epistemic": "observed_scan",
+   "tool": "wazuh",
+   "verified_by_collector": true,
+   "collected_utc": "2026-09-23T01:39:39.619453+00:00",
+   "observation": {
+    "siem": {
+     "present": true,
+     "agents_reporting": 39,
+     "agents_total": 41,
+     "retention_days": 400
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "c8b38b0cc0fadc6ad641d72f451bcea95ecf5359e5f18e8619edb5ba4e142836"
+  },
+  {
+   "subcriterion": "technology-v1:2.2a",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619454+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025 (Example Auditors LLP)",
+     "section": "CC6.1"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "181013a52eddf6b4a05dd0021e1913b9f344d3a73e62aceae6ec97488b881f9d"
+  },
+  {
+   "subcriterion": "technology-v1:4.4b",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619456+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC6.8"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "eef0c859ce2f8af36ae449409e2fb92a1b84e14c2aa17331057855840beacad4"
+  },
+  {
+   "subcriterion": "technology-v1:4.4c",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619457+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC6.6"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "62cade78f6494a78c3bb0aa77bcbb42517ef5edf3d69ceae5921b5a20556d697"
+  },
+  {
+   "subcriterion": "data-v1:in-transit",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619458+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC6.7"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "57e1dd9fc01d3c52ee25dd5ee1d7e64b1ceb2522b94472dd76dc0ca147e8c61f"
+  },
+  {
+   "subcriterion": "process-v1:change-management",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619459+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC8.1"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "8b3f8d3acf7468a27a1d81547b7b1e0d05f62bc9ab63ca7b9c7b72fb1ef6a256"
+  },
+  {
+   "subcriterion": "process-v1:incident-response",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619460+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC7.3, CC7.4"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "217f6a05f6bd068f9b4e60ee85876ea84d6349ecc96c12c742c018a03a4900bd"
+  },
+  {
+   "subcriterion": "process-v1:control-effectiveness",
+   "mode": "document",
+   "epistemic": "third_party_attestation",
+   "tool": "docs.py",
+   "collected_utc": "2026-09-23T01:39:39.619461+00:00",
+   "observation": {
+    "attestation": {
+     "present": true,
+     "document": "SOC 2 Type II, FY2025",
+     "section": "CC4.1"
+    }
+   },
+   "synthetic": true,
+   "item_sha256": "89ea2dadbe4afc1c3fdae34071683b320cb6924c18176273b9384490df31db08"
+  }
+ ],
+ "seal": {
+  "alg": "sha256",
+  "seal_version": 1,
+  "package_hash": "98dace6564503d9e3ea66602791efe206cba3b9cee17db41f53a1ecf9d2208ad",
+  "merkle_root": "c29f0ea3e0f911e161b9d8956716d181ef2362be204d58ecd50be0b2e2a96c07",
+  "merkle_alg": "rfc6962-sha256/promote-odd",
+  "header_sha256": "599a873acd672a38efd5c32e285ceda422455a6cda547ad46cdcd9c00f6e2855",
+  "anchor": {
+   "state": "unanchored",
+   "record": "package.json.anchors.json",
+   "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, <pkg>.anchors.json); run `anchor.py verify` to check them"
+  },
+  "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; edit anything above and verify fails",
+  "signature": {
+   "alg": "none",
+   "note": "unsigned (0.2 mode); enroll + --sign for identity"
+  }
+ }
+}
