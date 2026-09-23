@@ -151,3 +151,9 @@ Reads a sealed package (refuses a tampered one) and shows, per framework require
 Crosswalks live in `crosswalks/*.json`, versioned and public. Shipped: `cra-annex-i` (inline), `nist-sp800-171r2` (all 110 Rev. 2 requirements, from NIST's own list in `crosswalks/nist-sp800-171r2-security-reqs.source.csv`; 64 have a collector evidence slot today, 46 need Recorded or Stated evidence attached). `--bundle` writes a directory a third party can open: the package (and blobs), the coverage in md/json/html, and a README with the verify command.
 
 Sample: `python3 samples/make_sample_171.py && python3 report.py samples/sample-171-package.json --framework nist-sp800-171r2 --bundle samples/bundle-171-sample` (synthetic supplier, every item labelled synthetic).
+
+### Span pointers (point.py)
+
+"I think these lines answer this requirement." `point.py` seals exactly that sentence: a pointer from a named person to a line range and quoted span in a hashed document, keyed to a framework requirement (`nist-sp800-171r2:3.2.1`). It is Stated class: a claim, not an evaluation, and the natural precursor to a paid examination that confirms or refuses it. A model may suggest a pointer (`--model`); it is shown as suggested and never counted until a person re-points it (`--by`). Merge pointer packages into the main package with `merge.py`; the coverage report then shows `pointed` rows with the lines and the quote. Editing a quote after sealing fails verification.
+
+`point.py --doc policy.pdf --framework nist-sp800-171r2 --subject-json subject.json --by "Name, role" --claim "3.2.1|14-17|quoted span" --out-dir pointers`

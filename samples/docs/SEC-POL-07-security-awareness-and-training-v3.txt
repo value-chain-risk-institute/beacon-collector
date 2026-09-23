@@ -1,0 +1,32 @@
+Example Machining LLC                                   SEC-POL-07 rev 3, effective 2026-07-01
+Security Awareness and Training Policy (SYNTHETIC SAMPLE DOCUMENT)
+
+1. Purpose
+This policy establishes the security awareness and role-based training requirements for all
+personnel with access to Example Machining information systems, including systems that store,
+process or transmit Controlled Unclassified Information (CUI).
+
+2. Scope
+All employees, contractors and temporary staff.
+
+3. Awareness of risk (all personnel)
+3.1 Managers, system administrators and all users are made aware of the security risks
+associated with their activities and of the applicable policies, standards and procedures
+related to the security of company systems, at onboarding and annually thereafter.
+3.2 Awareness content is reviewed each January by the Security Officer.
+
+4. Role-based training
+4.1 Personnel are trained to carry out their assigned information security related duties
+and responsibilities before being granted privileged access, and annually.
+4.2 System administrators complete the administrator security curriculum (SEC-TRN-02).
+4.3 Completion is recorded in the LMS; records are retained for three years.
+
+5. Insider threat
+5.1 Annual awareness training includes recognizing and reporting potential indicators of
+insider threat, with reporting through the Security Officer or the anonymous hotline.
+
+6. Enforcement
+Failure to complete required training results in suspension of system access until complete.
+
+7. Review
+This policy is reviewed annually and on significant change.

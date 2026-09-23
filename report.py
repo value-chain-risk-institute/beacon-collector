@@ -32,6 +32,7 @@ import beaconlib as bl
 # epistemic tag. "observed" = a scan/export saw it; "attested" = a document
 # claims it; "subject_claim" = the subject asserted it in a note.
 GRADE_ORDER = ["observed", "attested", "subject_claim", "none"]
+SUGGESTED = "ai_inference"  # a model's pointer: shown, never counted
 
 def item_grade(item: dict) -> str:
     ep = item.get("epistemic")
@@ -41,6 +42,8 @@ def item_grade(item: dict) -> str:
         return "attested"
     if ep == "subject_claim":
         return "subject_claim"
+    if ep == SUGGESTED:
+        return SUGGESTED
     # scanner mode with a present observation = observed fact
     if item.get("mode") == "scanner":
         return "observed"
@@ -103,7 +106,7 @@ def slot_present(item: dict) -> bool:
     return False
 
 
-def build(pkg: dict, fw: dict):
+def build(pkg: dict, fw: dict, fw_key: str = None):
     # index items by subcriterion -> list of (grade, present)
     by_slot = {}
     for it in pkg.get("items", []):
@@ -114,28 +117,34 @@ def build(pkg: dict, fw: dict):
         for slot in c["slots"]:
             for it in by_slot.get(slot, []):
                 mapped.append(it)
+        # direct pointers: items keyed to this requirement itself ("<framework>:<req id>")
+        direct = by_slot.get("%s:%s" % (fw_key, c["id"]), []) if fw_key else []
+        pointed = [it for it in direct if it.get("epistemic") != SUGGESTED and slot_present(it)]
+        suggested = [it for it in direct if it.get("epistemic") == SUGGESTED]
         present_items = [it for it in mapped if slot_present(it)]
-        if not c.get("slots"):
-            coverage, grade, srcs = "manual", "none", []
-        elif not mapped:
-            coverage, grade, srcs = "absent", "none", []
-        elif present_items:
-            grade = strongest([item_grade(it) for it in present_items])
-            # partial if only some mapped slots have present evidence
+        ptr_src = ["pointer x%d" % len(pointed)] if pointed else []
+        if present_items:
+            grade = strongest([item_grade(it) for it in present_items] + (["subject_claim"] if pointed else []))
             slots_hit = {it["subcriterion"] for it in present_items}
             coverage = "covered" if slots_hit >= set(c["slots"]) else "partial"
-            srcs = sorted({it["subcriterion"] for it in present_items})
+            srcs = sorted({it["subcriterion"] for it in present_items}) + ptr_src
+        elif pointed:
+            coverage, grade, srcs = "pointed", "subject_claim", ptr_src
+        elif not c.get("slots"):
+            coverage, grade, srcs = "manual", "none", []
         else:
             coverage, grade, srcs = "absent", "none", []
         rows.append({"id": c["id"], "t": c["t"], "coverage": coverage,
                      "grade": grade, "sources": srcs,
-                     "family": c.get("family"), "kind": c.get("kind"), "slots": list(c.get("slots", []))})
+                     "family": c.get("family"), "kind": c.get("kind"), "slots": list(c.get("slots", [])),
+                     "pointers": [dict(it["observation"]["pointer"], by=(it.get("provenance") or {}).get("pointed_by")) for it in pointed],
+                     "suggested": [dict(it["observation"]["pointer"], model=(it.get("provenance") or {}).get("suggested_by_model")) for it in suggested]})
     return rows
 
 
 def render_md(pkg, fw, rows):
     subj = pkg.get("subject", {}).get("name", "subject")
-    counts = {"covered": 0, "partial": 0, "absent": 0, "manual": 0}
+    counts = {"covered": 0, "partial": 0, "absent": 0, "manual": 0, "pointed": 0}
     gcounts = {g: 0 for g in GRADE_ORDER}
     for r in rows:
         counts[r["coverage"]] += 1
@@ -152,8 +161,8 @@ def render_md(pkg, fw, rows):
                "verification (a Cairn Risk Co. engagement) upgrades `attested` and `subject_claim` "
                "lines toward `observed`.")
     out.append("")
-    out.append("**Coverage:** %d covered · %d partial · %d absent · %d no automated source  \n**Evidence grade:** %d observed · %d attested · %d stated · %d none" % (
-        counts["covered"], counts["partial"], counts["absent"], counts["manual"],
+    out.append("**Coverage:** %d covered · %d partial · %d pointed (stated) · %d absent · %d no automated source  \n**Evidence grade:** %d observed · %d attested · %d stated · %d none" % (
+        counts["covered"], counts["partial"], counts["pointed"], counts["absent"], counts["manual"],
         gcounts["observed"], gcounts["attested"], gcounts["subject_claim"], gcounts["none"]))
     out.append("")
     out.append("| Control | Coverage | Evidence grade | Source evidence |")
@@ -199,8 +208,8 @@ def render_html(pkg, fw, rows):
         if f not in fams:
             fams.append(f)
     def cls(r):
-        return {"observed": "obs", "attested": "att", "subject_claim": "sta", "none": "non"}[r["grade"]]
-    tot = {"covered": 0, "partial": 0, "absent": 0, "manual": 0}
+        return {"observed": "obs", "attested": "att", "subject_claim": "sta", "none": "non"}.get(r["grade"], "non")
+    tot = {"covered": 0, "partial": 0, "absent": 0, "manual": 0, "pointed": 0}
     for r in rows:
         tot[r["coverage"]] += 1
     css = """
@@ -214,7 +223,7 @@ def render_html(pkg, fw, rows):
     td.id{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;font-weight:600}
     .pill{display:inline-block;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600}
     .obs{background:#e6f2ec;color:#1f6f4a}.att{background:#fdf1dc;color:#8a5a00}.sta{background:#f5e6e6;color:#8a1c1c}.non{background:#eee;color:#666}
-    .cov-covered{color:#1f6f4a;font-weight:600}.cov-partial{color:#8a5a00;font-weight:600}.cov-absent{color:#8a1c1c;font-weight:600}.cov-manual{color:#666}
+    .cov-covered{color:#1f6f4a;font-weight:600}.cov-partial{color:#8a5a00;font-weight:600}.cov-pointed{color:#8a1c1c;font-weight:600}.cov-absent{color:#8a1c1c;font-weight:600}.cov-manual{color:#666}
     .foot{font-size:11px;color:#666;margin-top:26px;border-top:1px solid #e3e3e3;padding-top:8px}
     @media print{body{background:#fff}main{padding:0}}
     """
@@ -226,20 +235,24 @@ def render_html(pkg, fw, rows):
         _h.escape(str(subj.get("name", "subject"))), _h.escape(str(phash)[:16]) + "…", _h.escape(str(sealed)), _h.escape(str(seal.get("alg", "?"))), _h.escape(str((seal.get("signature") or {}).get("alg", "unsigned"))), _h.escape(str(fw.get("version", "")))))
     h.append("<div class=\"warn\"><b>What this is, and is not.</b> This shows where the subject's sealed evidence speaks to each requirement, and the class of evidence behind it: "
              "<span class=\"pill obs\">Observed</span> collected from a system of record or a scanner; <span class=\"pill att\">Attested</span> a third party's report, ingested and sealed; "
-             "<span class=\"pill sta\">Stated</span> the subject's own claim, sealed but unverified. " + " ".join(_h.escape(x) for x in fw.get("not_this", [])) +
+             "<span class=\"pill sta\">Stated</span> the subject's own claim, sealed but unverified, including a pointer to lines in its own sealed document. A model's suggested pointer is shown but never counted until a person confirms it. " + " ".join(_h.escape(x) for x in fw.get("not_this", [])) +
              " Independent verification upgrades Attested and Stated lines toward Observed.</div>")
-    h.append("<div class=\"kpis\"><div class=\"kpi\"><b>%d</b><span>requirements</span></div><div class=\"kpi\"><b>%d</b><span>covered</span></div><div class=\"kpi\"><b>%d</b><span>partial</span></div><div class=\"kpi\"><b>%d</b><span>no evidence yet</span></div><div class=\"kpi\"><b>%d</b><span>no automated source</span></div></div>" % (
-        len(rows), tot["covered"], tot["partial"], tot["absent"], tot["manual"]))
+    h.append("<div class=\"kpis\"><div class=\"kpi\"><b>%d</b><span>requirements</span></div><div class=\"kpi\"><b>%d</b><span>covered</span></div><div class=\"kpi\"><b>%d</b><span>partial</span></div><div class=\"kpi\"><b>%d</b><span>pointed (stated)</span></div><div class=\"kpi\"><b>%d</b><span>no evidence yet</span></div><div class=\"kpi\"><b>%d</b><span>no automated source</span></div></div>" % (
+        len(rows), tot["covered"], tot["partial"], tot["pointed"], tot["absent"], tot["manual"]))
     for fam in fams:
         frows = [r for r in rows if (r.get("family") or "Requirements") == fam]
         c = sum(1 for r in frows if r["coverage"] == "covered"); pth = sum(1 for r in frows if r["coverage"] == "partial")
         h.append("<h2>%s <span style=\"font-weight:400;color:#666;font-size:12px\">%d requirements · %d covered · %d partial</span></h2>" % (_h.escape(fam), len(frows), c, pth))
         h.append("<table><tr><th>Req.</th><th>Requirement</th><th>Kind</th><th>Coverage</th><th>Evidence class</th><th>Evidence slots</th></tr>")
         for r in frows:
-            covtxt = {"covered": "covered", "partial": "partial", "absent": "no evidence yet", "manual": "no automated source; attach Recorded or Stated evidence"}[r["coverage"]]
-            h.append("<tr><td class=\"id\">%s</td><td>%s</td><td>%s</td><td class=\"cov-%s\">%s</td><td><span class=\"pill %s\">%s</span></td><td>%s</td></tr>" % (
-                _h.escape(r["id"]), _h.escape(r["t"]), _h.escape(r.get("kind") or ""), r["coverage"], covtxt, cls(r), CLASS_LABEL[r["grade"]],
-                _h.escape(", ".join(r["sources"]) if r["sources"] else (", ".join(r.get("slots", [])) + " (mapped, no evidence in package)" if r.get("slots") else "—"))))
+            covtxt = {"covered": "covered", "partial": "partial", "pointed": "pointed: the subject cites its own document", "absent": "no evidence yet", "manual": "no automated source; attach Recorded or Stated evidence"}[r["coverage"]]
+            ptr = "".join("<div style=\"margin-top:3px;font-size:11px;color:#444\"><b>lines %s</b> of <code>%s</code>%s: <i>%s</i></div>" % (
+                _h.escape(str(p.get("lines"))), _h.escape(str(p.get("document_sha256", ""))[:12]), (" by " + _h.escape(str(p.get("by")))) if p.get("by") else "", _h.escape(str(p.get("quote", ""))[:160])) for p in r.get("pointers", []))
+            sug = "".join("<div style=\"margin-top:3px;font-size:11px;color:#8a5a00\">suggested by %s, unconfirmed: lines %s, <i>%s</i></div>" % (
+                _h.escape(str(p.get("model"))), _h.escape(str(p.get("lines"))), _h.escape(str(p.get("quote", ""))[:120])) for p in r.get("suggested", []))
+            h.append("<tr><td class=\"id\">%s</td><td>%s</td><td>%s</td><td class=\"cov-%s\">%s</td><td><span class=\"pill %s\">%s</span></td><td>%s%s%s</td></tr>" % (
+                _h.escape(r["id"]), _h.escape(r["t"]), _h.escape(r.get("kind") or ""), r["coverage"], covtxt, cls(r), CLASS_LABEL.get(r["grade"], r["grade"]),
+                _h.escape(", ".join(r["sources"]) if r["sources"] else (", ".join(r.get("slots", [])) + " (mapped, no evidence in package)" if r.get("slots") else "—")), ptr, sug))
         h.append("</table>")
     h.append("<p class=\"foot\">Generated by the Beacon Collector (collect, seal, send; never rates). Crosswalk %s. %s Package schema %s. The Value Chain Risk Institute, CC BY 4.0.</p>" % (
         _h.escape(str(fw.get("version", ""))), _h.escape(str(fw.get("status", ""))), _h.escape(str(pkg.get("schema", "?")))))
@@ -294,7 +307,7 @@ def main():
         sys.exit("refusing to report: package failed seal verification.\n" + buf.getvalue())
 
     fw = FRAMEWORKS[a.framework]
-    rows = build(pkg, fw)
+    rows = build(pkg, fw, a.framework)
     md = render_md(pkg, fw, rows)
     if a.md:
         open(a.md, "w").write(md + "\n")

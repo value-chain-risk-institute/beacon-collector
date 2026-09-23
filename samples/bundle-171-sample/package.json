@@ -1,280 +1,445 @@
 {
- "schema": "vcri.beacon.evidence-package/v0",
- "subject": {
-  "name": "Example Machining LLC (synthetic)",
-  "scope": "engineering network handling CUI",
-  "sector": "defense sub-tier supplier"
- },
- "collector": {
-  "name": "beacon-collector",
-  "version": "sample",
-  "note": "SYNTHETIC package for the 800-171 coverage bundle demo; not a real organisation"
- },
- "items": [
-  {
-   "subcriterion": "technology-v1:1.1a",
-   "mode": "scanner",
-   "epistemic": "observed_scan",
-   "tool": "trivy",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619330+00:00",
-   "observation": {
-    "package_inventory": {
-     "present": true,
-     "count": 412
+  "schema": "vcri.beacon.evidence-package/v0",
+  "subject": {
+    "name": "Example Machining LLC (synthetic)",
+    "scope": "multi-box:unknown",
+    "collected_utc": "2026-09-23T01:49:20.277301+00:00",
+    "boxes": [
+      "unknown"
+    ]
+  },
+  "collector": {
+    "name": "beacon-merge",
+    "version": "0.4.0",
+    "platform": "aggregate",
+    "merged_from": 3,
+    "note": "aggregate of per-box packages; each item keeps provenance.box"
+  },
+  "items": [
+    {
+      "subcriterion": "data-v1:in-transit",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619458+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC6.7"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "57e1dd9fc01d3c52ee25dd5ee1d7e64b1ceb2522b94472dd76dc0ca147e8c61f"
     },
-    "sbom": {
-     "standalone": true,
-     "format": "CycloneDX 1.6"
+    {
+      "subcriterion": "nist-sp800-171r2:3.2.1",
+      "mode": "document",
+      "epistemic": "subject_claim",
+      "tool": "point.py",
+      "provenance": {
+        "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+        "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+        "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+        "suggested_by_model": null
+      },
+      "observation": {
+        "pointer": {
+          "present": true,
+          "requirement": "3.2.1",
+          "lines": "14-17",
+          "quote": "Managers, system administrators and all users are made aware of the security risks associated with their activities and of the applicable policies, standards and procedures",
+          "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+        }
+      },
+      "verified_by_collector": false,
+      "context": [],
+      "completeness": {
+        "expected": [
+          "pointer"
+        ],
+        "obtained": [
+          "pointer"
+        ],
+        "fraction": 1.0,
+        "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+      },
+      "freshness": {
+        "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+        "note": "the document's own date governs age"
+      },
+      "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+      "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+      "item_sha256": "a1baa46d8e8e41426c9f2a8c0fddbc4e602ff994b02da090fa7501fba4109f75"
     },
-    "signed_attestation": {
-     "present": false
+    {
+      "subcriterion": "nist-sp800-171r2:3.2.2",
+      "mode": "document",
+      "epistemic": "subject_claim",
+      "tool": "point.py",
+      "provenance": {
+        "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+        "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+        "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+        "suggested_by_model": null
+      },
+      "observation": {
+        "pointer": {
+          "present": true,
+          "requirement": "3.2.2",
+          "lines": "19-21",
+          "quote": "Personnel are trained to carry out their assigned information security related duties and responsibilities before being granted privileged access, and annually",
+          "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+        }
+      },
+      "verified_by_collector": false,
+      "context": [],
+      "completeness": {
+        "expected": [
+          "pointer"
+        ],
+        "obtained": [
+          "pointer"
+        ],
+        "fraction": 1.0,
+        "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+      },
+      "freshness": {
+        "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+        "note": "the document's own date governs age"
+      },
+      "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+      "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+      "item_sha256": "f143bf84522587a0c116021f1ae7dfe99b3d522f286d0b493e197f2c2f6c935b"
+    },
+    {
+      "subcriterion": "nist-sp800-171r2:3.2.3",
+      "mode": "document",
+      "epistemic": "subject_claim",
+      "tool": "point.py",
+      "provenance": {
+        "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+        "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+        "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+        "suggested_by_model": null
+      },
+      "observation": {
+        "pointer": {
+          "present": true,
+          "requirement": "3.2.3",
+          "lines": "25-27",
+          "quote": "Annual awareness training includes recognizing and reporting potential indicators of insider threat",
+          "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+        }
+      },
+      "verified_by_collector": false,
+      "context": [],
+      "completeness": {
+        "expected": [
+          "pointer"
+        ],
+        "obtained": [
+          "pointer"
+        ],
+        "fraction": 1.0,
+        "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+      },
+      "freshness": {
+        "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+        "note": "the document's own date governs age"
+      },
+      "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+      "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+      "item_sha256": "18860bb525b6e9a62a0c447972cf507d35f8adb9041b88b30ef97847f7921b43"
+    },
+    {
+      "subcriterion": "nist-sp800-171r2:3.9.1",
+      "mode": "document",
+      "epistemic": "ai_inference",
+      "tool": "point.py",
+      "provenance": {
+        "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+        "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+        "pointed_by": null,
+        "suggested_by_model": "local-llm (synthetic suggestion)"
+      },
+      "observation": {
+        "pointer": {
+          "present": true,
+          "requirement": "3.9.1",
+          "lines": "29-30",
+          "quote": "Failure to complete required training results in suspension of system access",
+          "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+        }
+      },
+      "verified_by_collector": false,
+      "context": [],
+      "completeness": {
+        "expected": [
+          "pointer"
+        ],
+        "obtained": [
+          "pointer"
+        ],
+        "fraction": 1.0,
+        "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+      },
+      "freshness": {
+        "collected_utc": "2026-09-23T01:49:20.246810+00:00",
+        "note": "the document's own date governs age"
+      },
+      "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+      "collected_utc": "2026-09-23T01:49:20.246810+00:00",
+      "item_sha256": "5e02c9b830dee11d554c1085d34203cded630ca2145ca6c72a981980098d6e2b"
+    },
+    {
+      "subcriterion": "people-v1:jml",
+      "mode": "export",
+      "epistemic": "observed_export",
+      "tool": "okta-export",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619450+00:00",
+      "observation": {
+        "jml": {
+          "present": true,
+          "total_records": 61,
+          "disabled_or_suspended_still_present": 0,
+          "last_deprovision_days": 3
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "db738498aa977d87f3a1aeb697b84a3f2624aa8615b17072a78b38b5a2b5ad7f"
+    },
+    {
+      "subcriterion": "people-v1:least-privilege",
+      "mode": "export",
+      "epistemic": "observed_export",
+      "tool": "okta-export",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619451+00:00",
+      "observation": {
+        "least_privilege": {
+          "present": true,
+          "privileged_fraction": 0.08,
+          "admins": 4,
+          "total": 48
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "df4e59d5cb0ee4829323bb8fe2a139532780ad3c0860816916c321441b2167b8"
+    },
+    {
+      "subcriterion": "people-v1:mfa",
+      "mode": "export",
+      "epistemic": "observed_export",
+      "tool": "okta-export",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619448+00:00",
+      "observation": {
+        "mfa": {
+          "present": true,
+          "coverage_fraction": 0.96,
+          "total_users": 48,
+          "enrolled": 46
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "b0c369a0a6d50099a5fa8d3dc27380f95d9df7425fe16180f4393cb60ab190dc"
+    },
+    {
+      "subcriterion": "process-v1:change-management",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619459+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC8.1"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "8b3f8d3acf7468a27a1d81547b7b1e0d05f62bc9ab63ca7b9c7b72fb1ef6a256"
+    },
+    {
+      "subcriterion": "process-v1:control-effectiveness",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619461+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC4.1"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "89ea2dadbe4afc1c3fdae34071683b320cb6924c18176273b9384490df31db08"
+    },
+    {
+      "subcriterion": "process-v1:incident-response",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619460+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC7.3, CC7.4"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "217f6a05f6bd068f9b4e60ee85876ea84d6349ecc96c12c742c018a03a4900bd"
+    },
+    {
+      "subcriterion": "technology-v1:1.1a",
+      "mode": "scanner",
+      "epistemic": "observed_scan",
+      "tool": "trivy",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619330+00:00",
+      "observation": {
+        "package_inventory": {
+          "present": true,
+          "count": 412
+        },
+        "sbom": {
+          "standalone": true,
+          "format": "CycloneDX 1.6"
+        },
+        "signed_attestation": {
+          "present": false
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "0477f6f4a1ce3309aa9035abd387639eca5aec960ce45d52076d005b813a9266"
+    },
+    {
+      "subcriterion": "technology-v1:1.1b",
+      "mode": "scanner",
+      "epistemic": "observed_scan",
+      "tool": "openscap",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619443+00:00",
+      "observation": {
+        "checks_evaluated": {
+          "present": true,
+          "passed": 187,
+          "failed": 6,
+          "profile": "CIS Ubuntu 22.04 L1"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "e6b06d2315284cc5354a7c4d82e78ce199d73f89f52ec6897172619cd8bf59d0"
+    },
+    {
+      "subcriterion": "technology-v1:2.2a",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619454+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025 (Example Auditors LLP)",
+          "section": "CC6.1"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "181013a52eddf6b4a05dd0021e1913b9f344d3a73e62aceae6ec97488b881f9d"
+    },
+    {
+      "subcriterion": "technology-v1:4.4a",
+      "mode": "scanner",
+      "epistemic": "observed_scan",
+      "tool": "trivy",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619446+00:00",
+      "observation": {
+        "vulnerability_findings": {
+          "present": true,
+          "by_severity": {
+            "critical": 0,
+            "high": 3,
+            "medium": 41,
+            "low": 88
+          },
+          "fix_available": 39
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "8fdf653231116e86e65f1b5ecf97b5184c28c4dbd8613698c35af77783f9f69d"
+    },
+    {
+      "subcriterion": "technology-v1:4.4b",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619456+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC6.8"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "eef0c859ce2f8af36ae449409e2fb92a1b84e14c2aa17331057855840beacad4"
+    },
+    {
+      "subcriterion": "technology-v1:4.4c",
+      "mode": "document",
+      "epistemic": "third_party_attestation",
+      "tool": "docs.py",
+      "collected_utc": "2026-09-23T01:39:39.619457+00:00",
+      "observation": {
+        "attestation": {
+          "present": true,
+          "document": "SOC 2 Type II, FY2025",
+          "section": "CC6.6"
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "62cade78f6494a78c3bb0aa77bcbb42517ef5edf3d69ceae5921b5a20556d697"
+    },
+    {
+      "subcriterion": "technology-v1:6.6a",
+      "mode": "scanner",
+      "epistemic": "observed_scan",
+      "tool": "wazuh",
+      "verified_by_collector": true,
+      "collected_utc": "2026-09-23T01:39:39.619453+00:00",
+      "observation": {
+        "siem": {
+          "present": true,
+          "agents_reporting": 39,
+          "agents_total": 41,
+          "retention_days": 400
+        }
+      },
+      "synthetic": true,
+      "item_sha256": "c8b38b0cc0fadc6ad641d72f451bcea95ecf5359e5f18e8619edb5ba4e142836"
     }
-   },
-   "synthetic": true,
-   "item_sha256": "0477f6f4a1ce3309aa9035abd387639eca5aec960ce45d52076d005b813a9266"
-  },
-  {
-   "subcriterion": "technology-v1:1.1b",
-   "mode": "scanner",
-   "epistemic": "observed_scan",
-   "tool": "openscap",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619443+00:00",
-   "observation": {
-    "checks_evaluated": {
-     "present": true,
-     "passed": 187,
-     "failed": 6,
-     "profile": "CIS Ubuntu 22.04 L1"
+  ],
+  "seal": {
+    "alg": "sha256",
+    "seal_version": 1,
+    "package_hash": "8eb22fed4110ef92fff589c94bfb99bb2c2be4af7bb9fe72b47e465374910c7f",
+    "merkle_root": "4693488ecc78cd6d0a84637c48b42fef30508f52bab361026cbda1cbc83b7cd6",
+    "merkle_alg": "rfc6962-sha256/promote-odd",
+    "header_sha256": "d7a7f0d23282a2b739be287ddee68f538bc479edda09454be03969adff62893d",
+    "anchor": {
+      "state": "unanchored",
+      "record": "package.json.anchors.json",
+      "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, <pkg>.anchors.json); run `anchor.py verify` to check them"
+    },
+    "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; edit anything above and verify fails",
+    "signature": {
+      "alg": "none",
+      "note": "unsigned (0.2 mode); enroll + --sign for identity"
     }
-   },
-   "synthetic": true,
-   "item_sha256": "e6b06d2315284cc5354a7c4d82e78ce199d73f89f52ec6897172619cd8bf59d0"
-  },
-  {
-   "subcriterion": "technology-v1:4.4a",
-   "mode": "scanner",
-   "epistemic": "observed_scan",
-   "tool": "trivy",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619446+00:00",
-   "observation": {
-    "vulnerability_findings": {
-     "present": true,
-     "by_severity": {
-      "critical": 0,
-      "high": 3,
-      "medium": 41,
-      "low": 88
-     },
-     "fix_available": 39
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "8fdf653231116e86e65f1b5ecf97b5184c28c4dbd8613698c35af77783f9f69d"
-  },
-  {
-   "subcriterion": "people-v1:mfa",
-   "mode": "export",
-   "epistemic": "observed_export",
-   "tool": "okta-export",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619448+00:00",
-   "observation": {
-    "mfa": {
-     "present": true,
-     "coverage_fraction": 0.96,
-     "total_users": 48,
-     "enrolled": 46
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "b0c369a0a6d50099a5fa8d3dc27380f95d9df7425fe16180f4393cb60ab190dc"
-  },
-  {
-   "subcriterion": "people-v1:jml",
-   "mode": "export",
-   "epistemic": "observed_export",
-   "tool": "okta-export",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619450+00:00",
-   "observation": {
-    "jml": {
-     "present": true,
-     "total_records": 61,
-     "disabled_or_suspended_still_present": 0,
-     "last_deprovision_days": 3
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "db738498aa977d87f3a1aeb697b84a3f2624aa8615b17072a78b38b5a2b5ad7f"
-  },
-  {
-   "subcriterion": "people-v1:least-privilege",
-   "mode": "export",
-   "epistemic": "observed_export",
-   "tool": "okta-export",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619451+00:00",
-   "observation": {
-    "least_privilege": {
-     "present": true,
-     "privileged_fraction": 0.08,
-     "admins": 4,
-     "total": 48
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "df4e59d5cb0ee4829323bb8fe2a139532780ad3c0860816916c321441b2167b8"
-  },
-  {
-   "subcriterion": "technology-v1:6.6a",
-   "mode": "scanner",
-   "epistemic": "observed_scan",
-   "tool": "wazuh",
-   "verified_by_collector": true,
-   "collected_utc": "2026-09-23T01:39:39.619453+00:00",
-   "observation": {
-    "siem": {
-     "present": true,
-     "agents_reporting": 39,
-     "agents_total": 41,
-     "retention_days": 400
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "c8b38b0cc0fadc6ad641d72f451bcea95ecf5359e5f18e8619edb5ba4e142836"
-  },
-  {
-   "subcriterion": "technology-v1:2.2a",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619454+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025 (Example Auditors LLP)",
-     "section": "CC6.1"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "181013a52eddf6b4a05dd0021e1913b9f344d3a73e62aceae6ec97488b881f9d"
-  },
-  {
-   "subcriterion": "technology-v1:4.4b",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619456+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC6.8"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "eef0c859ce2f8af36ae449409e2fb92a1b84e14c2aa17331057855840beacad4"
-  },
-  {
-   "subcriterion": "technology-v1:4.4c",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619457+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC6.6"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "62cade78f6494a78c3bb0aa77bcbb42517ef5edf3d69ceae5921b5a20556d697"
-  },
-  {
-   "subcriterion": "data-v1:in-transit",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619458+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC6.7"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "57e1dd9fc01d3c52ee25dd5ee1d7e64b1ceb2522b94472dd76dc0ca147e8c61f"
-  },
-  {
-   "subcriterion": "process-v1:change-management",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619459+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC8.1"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "8b3f8d3acf7468a27a1d81547b7b1e0d05f62bc9ab63ca7b9c7b72fb1ef6a256"
-  },
-  {
-   "subcriterion": "process-v1:incident-response",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619460+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC7.3, CC7.4"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "217f6a05f6bd068f9b4e60ee85876ea84d6349ecc96c12c742c018a03a4900bd"
-  },
-  {
-   "subcriterion": "process-v1:control-effectiveness",
-   "mode": "document",
-   "epistemic": "third_party_attestation",
-   "tool": "docs.py",
-   "collected_utc": "2026-09-23T01:39:39.619461+00:00",
-   "observation": {
-    "attestation": {
-     "present": true,
-     "document": "SOC 2 Type II, FY2025",
-     "section": "CC4.1"
-    }
-   },
-   "synthetic": true,
-   "item_sha256": "89ea2dadbe4afc1c3fdae34071683b320cb6924c18176273b9384490df31db08"
   }
- ],
- "seal": {
-  "alg": "sha256",
-  "seal_version": 1,
-  "package_hash": "98dace6564503d9e3ea66602791efe206cba3b9cee17db41f53a1ecf9d2208ad",
-  "merkle_root": "c29f0ea3e0f911e161b9d8956716d181ef2362be204d58ecd50be0b2e2a96c07",
-  "merkle_alg": "rfc6962-sha256/promote-odd",
-  "header_sha256": "599a873acd672a38efd5c32e285ceda422455a6cda547ad46cdcd9c00f6e2855",
-  "anchor": {
-   "state": "unanchored",
-   "record": "package.json.anchors.json",
-   "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, <pkg>.anchors.json); run `anchor.py verify` to check them"
-  },
-  "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; edit anything above and verify fails",
-  "signature": {
-   "alg": "none",
-   "note": "unsigned (0.2 mode); enroll + --sign for identity"
-  }
- }
 }

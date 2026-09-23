@@ -1,0 +1,153 @@
+{
+ "schema": "vcri.beacon.evidence-package/v0",
+ "subject": {
+  "name": "Example Machining LLC (synthetic)",
+  "scope": "engineering network handling CUI",
+  "sector": "defense sub-tier supplier"
+ },
+ "collector": {
+  "name": "beacon-collector/point",
+  "version": "0.1",
+  "note": "span pointers are claims about a sealed document, Stated class; ai_inference pointers never count until a person confirms"
+ },
+ "items": [
+  {
+   "subcriterion": "nist-sp800-171r2:3.2.1",
+   "mode": "document",
+   "epistemic": "subject_claim",
+   "tool": "point.py",
+   "provenance": {
+    "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+    "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+    "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+    "suggested_by_model": null
+   },
+   "observation": {
+    "pointer": {
+     "present": true,
+     "requirement": "3.2.1",
+     "lines": "14-17",
+     "quote": "Managers, system administrators and all users are made aware of the security risks associated with their activities and of the applicable policies, standards and procedures",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+    }
+   },
+   "verified_by_collector": false,
+   "context": [],
+   "completeness": {
+    "expected": [
+     "pointer"
+    ],
+    "obtained": [
+     "pointer"
+    ],
+    "fraction": 1.0,
+    "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+   },
+   "freshness": {
+    "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+    "note": "the document's own date governs age"
+   },
+   "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+   "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+   "item_sha256": "a1baa46d8e8e41426c9f2a8c0fddbc4e602ff994b02da090fa7501fba4109f75"
+  },
+  {
+   "subcriterion": "nist-sp800-171r2:3.2.2",
+   "mode": "document",
+   "epistemic": "subject_claim",
+   "tool": "point.py",
+   "provenance": {
+    "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+    "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+    "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+    "suggested_by_model": null
+   },
+   "observation": {
+    "pointer": {
+     "present": true,
+     "requirement": "3.2.2",
+     "lines": "19-21",
+     "quote": "Personnel are trained to carry out their assigned information security related duties and responsibilities before being granted privileged access, and annually",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+    }
+   },
+   "verified_by_collector": false,
+   "context": [],
+   "completeness": {
+    "expected": [
+     "pointer"
+    ],
+    "obtained": [
+     "pointer"
+    ],
+    "fraction": 1.0,
+    "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+   },
+   "freshness": {
+    "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+    "note": "the document's own date governs age"
+   },
+   "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+   "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+   "item_sha256": "f143bf84522587a0c116021f1ae7dfe99b3d522f286d0b493e197f2c2f6c935b"
+  },
+  {
+   "subcriterion": "nist-sp800-171r2:3.2.3",
+   "mode": "document",
+   "epistemic": "subject_claim",
+   "tool": "point.py",
+   "provenance": {
+    "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+    "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+    "pointed_by": "R. Alvarez, IT Manager (synthetic)",
+    "suggested_by_model": null
+   },
+   "observation": {
+    "pointer": {
+     "present": true,
+     "requirement": "3.2.3",
+     "lines": "25-27",
+     "quote": "Annual awareness training includes recognizing and reporting potential indicators of insider threat",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+    }
+   },
+   "verified_by_collector": false,
+   "context": [],
+   "completeness": {
+    "expected": [
+     "pointer"
+    ],
+    "obtained": [
+     "pointer"
+    ],
+    "fraction": 1.0,
+    "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+   },
+   "freshness": {
+    "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+    "note": "the document's own date governs age"
+   },
+   "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+   "collected_utc": "2026-09-23T01:49:20.216820+00:00",
+   "item_sha256": "18860bb525b6e9a62a0c447972cf507d35f8adb9041b88b30ef97847f7921b43"
+  }
+ ],
+ "seal": {
+  "alg": "sha256",
+  "seal_version": 1,
+  "package_hash": "1bf1157ed38761b7293e444ca3f3690ed6ff19a7b8ce6ddf410299948accde4f",
+  "merkle_root": "9410aad3737e025a3e391ad20d1304b1c2a418efd922a021c279dc460aa19fc4",
+  "merkle_alg": "rfc6962-sha256/promote-odd",
+  "header_sha256": "d2c625e768e5c2e8f39fd3e75baa6cd9ff1215b7ce0b377d7422a8116da494bc",
+  "anchor": {
+   "state": "unanchored",
+   "record": "package.json.anchors.json",
+   "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, <pkg>.anchors.json); run `anchor.py verify` to check them"
+  },
+  "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; edit anything above and verify fails",
+  "signature": {
+   "alg": "none",
+   "note": "unsigned (0.2 mode); enroll + --sign for identity"
+  }
+ }
+}

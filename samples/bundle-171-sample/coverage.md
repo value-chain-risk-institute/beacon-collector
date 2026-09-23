@@ -6,8 +6,8 @@
 
 > **Indicative, evidence-backed, NOT a certification.** This shows where the subject's collected evidence maps to the framework's controls, and the grade of evidence behind each. It is not a conformance determination. Independent verification (a Cairn Risk Co. engagement) upgrades `attested` and `subject_claim` lines toward `observed`.
 
-**Coverage:** 60 covered · 2 partial · 2 absent · 46 no automated source  
-**Evidence grade:** 39 observed · 23 attested · 0 stated · 48 none
+**Coverage:** 60 covered · 2 partial · 3 pointed (stated) · 2 absent · 43 no automated source  
+**Evidence grade:** 39 observed · 23 attested · 3 stated · 45 none
 
 | Control | Coverage | Evidence grade | Source evidence |
 |---|---|---|---|
@@ -33,9 +33,9 @@
 | **3.1.20** Verify and control/limit connections to and use of external systems. | covered | attested | technology-v1:4.4c |
 | **3.1.21** Limit use of portable storage devices on external systems. | manual | none | — |
 | **3.1.22** Control CUI posted or processed on publicly accessible systems. | manual | none | — |
-| **3.2.1** Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems. | manual | none | — |
-| **3.2.2** Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities. | manual | none | — |
-| **3.2.3** Provide security awareness training on recognizing and reporting potential indicators of insider threat. | manual | none | — |
+| **3.2.1** Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems. | pointed | subject_claim | pointer x1 |
+| **3.2.2** Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities. | pointed | subject_claim | pointer x1 |
+| **3.2.3** Provide security awareness training on recognizing and reporting potential indicators of insider threat. | pointed | subject_claim | pointer x1 |
 | **3.3.1** Create and retain system audit logs and records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful or unauthorized system activity | covered | observed | technology-v1:6.6a |
 | **3.3.2** Ensure that the actions of individual system users can be uniquely traced to those users, so they can be held accountable for their actions. | covered | observed | people-v1:jml, technology-v1:6.6a |
 | **3.3.3** Review and update logged events. | covered | observed | technology-v1:6.6a |
@@ -134,9 +134,9 @@
 - **3.1.19 Encrypt CUI on mobile devices and mobile computing platforms.[23]** — partial coverage.
 - **3.1.21 Limit use of portable storage devices on external systems.** — partial coverage.
 - **3.1.22 Control CUI posted or processed on publicly accessible systems.** — partial coverage.
-- **3.2.1 Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems.** — partial coverage.
-- **3.2.2 Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.** — partial coverage.
-- **3.2.3 Provide security awareness training on recognizing and reporting potential indicators of insider threat.** — partial coverage.
+- **3.2.1 Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems.** — only self-claimed.
+- **3.2.2 Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.** — only self-claimed.
+- **3.2.3 Provide security awareness training on recognizing and reporting potential indicators of insider threat.** — only self-claimed.
 - **3.3.7 Provide a system capability that compares and synchronizes internal system clocks with an authoritative source to generate time stamps for audit records** — partial coverage.
 - **3.4.2 Establish and enforce security configuration settings for information technology products employed in organizational systems.** — partial coverage.
 - **3.4.6 Employ the principle of least functionality by configuring organizational systems to provide only essential capabilities.** — partial coverage.

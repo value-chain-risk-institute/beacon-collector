@@ -1,0 +1,73 @@
+{
+ "schema": "vcri.beacon.evidence-package/v0",
+ "subject": {
+  "name": "Example Machining LLC (synthetic)",
+  "scope": "engineering network handling CUI",
+  "sector": "defense sub-tier supplier"
+ },
+ "collector": {
+  "name": "beacon-collector/point",
+  "version": "0.1",
+  "note": "span pointers are claims about a sealed document, Stated class; ai_inference pointers never count until a person confirms"
+ },
+ "items": [
+  {
+   "subcriterion": "nist-sp800-171r2:3.9.1",
+   "mode": "document",
+   "epistemic": "ai_inference",
+   "tool": "point.py",
+   "provenance": {
+    "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+    "document_name": "SEC-POL-07-security-awareness-and-training-v3.txt",
+    "pointed_by": null,
+    "suggested_by_model": "local-llm (synthetic suggestion)"
+   },
+   "observation": {
+    "pointer": {
+     "present": true,
+     "requirement": "3.9.1",
+     "lines": "29-30",
+     "quote": "Failure to complete required training results in suspension of system access",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46"
+    }
+   },
+   "verified_by_collector": false,
+   "context": [],
+   "completeness": {
+    "expected": [
+     "pointer"
+    ],
+    "obtained": [
+     "pointer"
+    ],
+    "fraction": 1.0,
+    "note": "a pointer proves the document says this at these lines; it does not prove the practice"
+   },
+   "freshness": {
+    "collected_utc": "2026-09-23T01:49:20.246810+00:00",
+    "note": "the document's own date governs age"
+   },
+   "artifact_ref": "blob/sha256-d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+   "collected_utc": "2026-09-23T01:49:20.246810+00:00",
+   "item_sha256": "5e02c9b830dee11d554c1085d34203cded630ca2145ca6c72a981980098d6e2b"
+  }
+ ],
+ "seal": {
+  "alg": "sha256",
+  "seal_version": 1,
+  "package_hash": "1b6e032864e71c5547d40355962bd84b4c77e927be211f69f66789e40bd6dcd3",
+  "merkle_root": "fa6b9e3a0d550db52b795a86ea447da3d9c09c77f4ecadb44f4ac622cc390003",
+  "merkle_alg": "rfc6962-sha256/promote-odd",
+  "header_sha256": "c914ef1f65cb866dbe850563a7f8005ae0e6b97e69c8f1eb182ea261d6dc4790",
+  "anchor": {
+   "state": "unanchored",
+   "record": "package.json.anchors.json",
+   "note": "anchors live beside the package (<pkg>.tsr, <pkg>.ots, <pkg>.anchors.json); run `anchor.py verify` to check them"
+  },
+  "note": "per-item item_sha256, merkle_root over them, package_hash over the whole; edit anything above and verify fails",
+  "signature": {
+   "alg": "none",
+   "note": "unsigned (0.2 mode); enroll + --sign for identity"
+  }
+ }
+}

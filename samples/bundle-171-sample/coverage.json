@@ -11,15 +11,18 @@
  },
  "subject": {
   "name": "Example Machining LLC (synthetic)",
-  "scope": "engineering network handling CUI",
-  "sector": "defense sub-tier supplier"
+  "scope": "multi-box:unknown",
+  "collected_utc": "2026-09-23T01:49:20.277301+00:00",
+  "boxes": [
+   "unknown"
+  ]
  },
  "package": {
   "schema": "vcri.beacon.evidence-package/v0",
-  "package_hash": "98dace6564503d9e3ea66602791efe206cba3b9cee17db41f53a1ecf9d2208ad",
-  "merkle_root": "c29f0ea3e0f911e161b9d8956716d181ef2362be204d58ecd50be0b2e2a96c07",
+  "package_hash": "8eb22fed4110ef92fff589c94bfb99bb2c2be4af7bb9fe72b47e465374910c7f",
+  "merkle_root": "4693488ecc78cd6d0a84637c48b42fef30508f52bab361026cbda1cbc83b7cd6",
   "signature_alg": "none",
-  "collected_utc": "2026-09-23T01:39:39.619461+00:00",
+  "collected_utc": "2026-09-23T01:49:20.246810+00:00",
   "anchor": {
    "state": "unanchored",
    "record": "package.json.anchors.json",
@@ -50,7 +53,9 @@
    "slots": [
     "people-v1:jml",
     "people-v1:mfa"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.2",
@@ -64,7 +69,9 @@
    "kind": "Basic",
    "slots": [
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.3",
@@ -78,7 +85,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.4",
@@ -92,7 +101,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.5",
@@ -106,7 +117,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.6",
@@ -120,7 +133,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.7",
@@ -136,7 +151,9 @@
    "slots": [
     "people-v1:least-privilege",
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.8",
@@ -146,7 +163,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.9",
@@ -156,7 +175,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.10",
@@ -166,7 +187,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.11",
@@ -176,7 +199,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.12",
@@ -190,7 +215,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.13",
@@ -204,7 +231,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.14",
@@ -214,7 +243,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.15",
@@ -224,7 +255,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.16",
@@ -234,7 +267,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.17",
@@ -248,7 +283,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.18",
@@ -258,7 +295,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.19",
@@ -268,7 +307,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.20",
@@ -282,7 +323,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.21",
@@ -292,7 +335,9 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.1.22",
@@ -302,37 +347,78 @@
    "sources": [],
    "family": "Access Control",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.2.1",
    "t": "Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems.",
-   "coverage": "manual",
-   "grade": "none",
-   "sources": [],
+   "coverage": "pointed",
+   "grade": "subject_claim",
+   "sources": [
+    "pointer x1"
+   ],
    "family": "Awareness and Training",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [
+    {
+     "present": true,
+     "requirement": "3.2.1",
+     "lines": "14-17",
+     "quote": "Managers, system administrators and all users are made aware of the security risks associated with their activities and of the applicable policies, standards and procedures",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+     "by": "R. Alvarez, IT Manager (synthetic)"
+    }
+   ],
+   "suggested": []
   },
   {
    "id": "3.2.2",
    "t": "Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.",
-   "coverage": "manual",
-   "grade": "none",
-   "sources": [],
+   "coverage": "pointed",
+   "grade": "subject_claim",
+   "sources": [
+    "pointer x1"
+   ],
    "family": "Awareness and Training",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [
+    {
+     "present": true,
+     "requirement": "3.2.2",
+     "lines": "19-21",
+     "quote": "Personnel are trained to carry out their assigned information security related duties and responsibilities before being granted privileged access, and annually",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+     "by": "R. Alvarez, IT Manager (synthetic)"
+    }
+   ],
+   "suggested": []
   },
   {
    "id": "3.2.3",
    "t": "Provide security awareness training on recognizing and reporting potential indicators of insider threat.",
-   "coverage": "manual",
-   "grade": "none",
-   "sources": [],
+   "coverage": "pointed",
+   "grade": "subject_claim",
+   "sources": [
+    "pointer x1"
+   ],
    "family": "Awareness and Training",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [
+    {
+     "present": true,
+     "requirement": "3.2.3",
+     "lines": "25-27",
+     "quote": "Annual awareness training includes recognizing and reporting potential indicators of insider threat",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+     "by": "R. Alvarez, IT Manager (synthetic)"
+    }
+   ],
+   "suggested": []
   },
   {
    "id": "3.3.1",
@@ -346,7 +432,9 @@
    "kind": "Basic",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.2",
@@ -362,7 +450,9 @@
    "slots": [
     "technology-v1:6.6a",
     "people-v1:jml"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.3",
@@ -376,7 +466,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.4",
@@ -390,7 +482,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.5",
@@ -404,7 +498,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.6",
@@ -418,7 +514,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.7",
@@ -428,7 +526,9 @@
    "sources": [],
    "family": "Audit and Accountability",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.8",
@@ -442,7 +542,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.3.9",
@@ -458,7 +560,9 @@
    "slots": [
     "technology-v1:6.6a",
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.1",
@@ -474,7 +578,9 @@
    "slots": [
     "technology-v1:1.1a",
     "technology-v1:1.1b"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.2",
@@ -489,7 +595,9 @@
    "slots": [
     "technology-v1:1.1b",
     "technology-v1:6.6c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.3",
@@ -503,7 +611,9 @@
    "kind": "Derived",
    "slots": [
     "process-v1:change-management"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.4",
@@ -517,7 +627,9 @@
    "kind": "Derived",
    "slots": [
     "process-v1:change-management"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.5",
@@ -533,7 +645,9 @@
    "slots": [
     "process-v1:change-management",
     "people-v1:least-privilege"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.6",
@@ -548,7 +662,9 @@
    "slots": [
     "technology-v1:1.1b",
     "technology-v1:6.6c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.7",
@@ -564,7 +680,9 @@
    "slots": [
     "technology-v1:1.1b",
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.8",
@@ -578,7 +696,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:1.1a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.4.9",
@@ -592,7 +712,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:1.1a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.1",
@@ -608,7 +730,9 @@
    "slots": [
     "technology-v1:2.2a",
     "people-v1:jml"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.2",
@@ -624,7 +748,9 @@
    "slots": [
     "technology-v1:2.2a",
     "people-v1:mfa"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.3",
@@ -638,7 +764,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:mfa"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.4",
@@ -652,7 +780,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:mfa"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.5",
@@ -666,7 +796,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:jml"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.6",
@@ -680,7 +812,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:jml"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.7",
@@ -690,7 +824,9 @@
    "sources": [],
    "family": "Identification and Authentication",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.8",
@@ -700,7 +836,9 @@
    "sources": [],
    "family": "Identification and Authentication",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.9",
@@ -710,7 +848,9 @@
    "sources": [],
    "family": "Identification and Authentication",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.10",
@@ -726,7 +866,9 @@
    "slots": [
     "technology-v1:2.2a",
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.5.11",
@@ -736,7 +878,9 @@
    "sources": [],
    "family": "Identification and Authentication",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.6.1",
@@ -750,7 +894,9 @@
    "kind": "Basic",
    "slots": [
     "process-v1:incident-response"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.6.2",
@@ -766,7 +912,9 @@
    "slots": [
     "process-v1:incident-response",
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.6.3",
@@ -780,7 +928,9 @@
    "kind": "Derived",
    "slots": [
     "process-v1:incident-response"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.1",
@@ -790,7 +940,9 @@
    "sources": [],
    "family": "Maintenance",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.2",
@@ -800,7 +952,9 @@
    "sources": [],
    "family": "Maintenance",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.3",
@@ -810,7 +964,9 @@
    "sources": [],
    "family": "Maintenance",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.4",
@@ -820,7 +976,9 @@
    "sources": [],
    "family": "Maintenance",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.5",
@@ -834,7 +992,9 @@
    "kind": "Derived",
    "slots": [
     "people-v1:mfa"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.7.6",
@@ -844,7 +1004,9 @@
    "sources": [],
    "family": "Maintenance",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.1",
@@ -854,7 +1016,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.2",
@@ -864,7 +1028,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.3",
@@ -876,7 +1042,9 @@
    "kind": "Basic",
    "slots": [
     "data-v1:retention"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.4",
@@ -886,7 +1054,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.5",
@@ -896,7 +1066,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.6",
@@ -910,7 +1082,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.7",
@@ -920,7 +1094,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.8",
@@ -930,7 +1106,9 @@
    "sources": [],
    "family": "Media Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.8.9",
@@ -942,7 +1120,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:backup-recovery"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.9.1",
@@ -952,7 +1132,18 @@
    "sources": [],
    "family": "Personnel Security",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": [
+    {
+     "present": true,
+     "requirement": "3.9.1",
+     "lines": "29-30",
+     "quote": "Failure to complete required training results in suspension of system access",
+     "document_sha256": "d08e849fb03e44e5a00f3485efaced513494db00ed9a93faf9e859f7861b0c46",
+     "model": "local-llm (synthetic suggestion)"
+    }
+   ]
   },
   {
    "id": "3.9.2",
@@ -966,7 +1157,9 @@
    "kind": "Basic",
    "slots": [
     "people-v1:jml"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.1",
@@ -976,7 +1169,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.2",
@@ -986,7 +1181,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.3",
@@ -996,7 +1193,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.4",
@@ -1006,7 +1205,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.5",
@@ -1016,7 +1217,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.10.6",
@@ -1026,7 +1229,9 @@
    "sources": [],
    "family": "Physical Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.11.1",
@@ -1036,7 +1241,9 @@
    "sources": [],
    "family": "Risk Assessment",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.11.2",
@@ -1050,7 +1257,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.11.3",
@@ -1064,7 +1273,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.12.1",
@@ -1078,7 +1289,9 @@
    "kind": "Basic",
    "slots": [
     "process-v1:control-effectiveness"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.12.2",
@@ -1092,7 +1305,9 @@
    "kind": "Basic",
    "slots": [
     "process-v1:control-effectiveness"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.12.3",
@@ -1108,7 +1323,9 @@
    "slots": [
     "process-v1:control-effectiveness",
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.12.4",
@@ -1122,7 +1339,9 @@
    "kind": "Basic",
    "slots": [
     "process-v1:control-effectiveness"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.1",
@@ -1138,7 +1357,9 @@
    "slots": [
     "technology-v1:4.4c",
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.2",
@@ -1148,7 +1369,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Basic",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.3",
@@ -1158,7 +1381,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.4",
@@ -1168,7 +1393,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.5",
@@ -1182,7 +1409,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.6",
@@ -1196,7 +1425,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.7",
@@ -1206,7 +1437,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.8",
@@ -1220,7 +1453,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.9",
@@ -1230,7 +1465,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.10",
@@ -1244,7 +1481,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.11",
@@ -1258,7 +1497,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.12",
@@ -1268,7 +1509,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.13",
@@ -1278,7 +1521,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.14",
@@ -1288,7 +1533,9 @@
    "sources": [],
    "family": "System and Communications Protection",
    "kind": "Derived",
-   "slots": []
+   "slots": [],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.15",
@@ -1302,7 +1549,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:2.2a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.13.16",
@@ -1316,7 +1565,9 @@
    "kind": "Derived",
    "slots": [
     "data-v1:in-transit"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.1",
@@ -1330,7 +1581,9 @@
    "kind": "Basic",
    "slots": [
     "technology-v1:4.4a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.2",
@@ -1344,7 +1597,9 @@
    "kind": "Basic",
    "slots": [
     "technology-v1:4.4b"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.3",
@@ -1360,7 +1615,9 @@
    "slots": [
     "technology-v1:4.4a",
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.4",
@@ -1374,7 +1631,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4b"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.5",
@@ -1388,7 +1647,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:4.4b"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.6",
@@ -1404,7 +1665,9 @@
    "slots": [
     "technology-v1:6.6a",
     "technology-v1:4.4c"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   },
   {
    "id": "3.14.7",
@@ -1418,7 +1681,9 @@
    "kind": "Derived",
    "slots": [
     "technology-v1:6.6a"
-   ]
+   ],
+   "pointers": [],
+   "suggested": []
   }
  ]
 }
