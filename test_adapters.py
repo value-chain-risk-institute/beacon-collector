@@ -271,13 +271,22 @@ def main():
     p = o[ak.UNMAPPED][1]
     check("phishing: 3 recipients, 1 clicked, 1 reported, 1 entered data",
           (p["recipients"], p["clicked"], p["reported"], p["data_entered"]) == (3, 1, 1, 1))
+    o = exportcsv.aws_iam(exportcsv.read_rows(open(os.path.join(FIX, "aws-iam-credential-report-sample.csv"), "rb").read()),
+                          datetime(2026, 9, 30, tzinfo=timezone.utc))
+    m, k = o["people-v1:mfa"][1], o["technology-v1:2.2a"][1]
+    check("AWS IAM: 1/2 console users with MFA, root MFA on, key-only user excluded",
+          (m["mfa_enabled"], m["active_accounts"], m["root_mfa_active"], m["accounts_without_mfa"]) == (1, 2, True, ["bob-synthetic"]))
+    check("AWS IAM: 3 active keys, oldest rotated 1003 days ago, 1 over 90 days, 1 never used",
+          (k["active_access_keys"], k["oldest_rotation_days"], k["keys_rotated_over_90_days"],
+           k["keys_never_used_or_idle_over_90_days"], k["root_access_keys_active"]) == (3, 1003, 1, 1, 0))
     try:
         exportcsv.entra_mfa(exportcsv.read_rows(b"foo,bar\n1,2\n"))
         check("an unrecognized header fails loudly", False)
     except ValueError:
         check("an unrecognized header fails loudly", True)
     for src, f in (("entra-mfa", "entra-registration-sample.csv"), ("gworkspace-users", "gworkspace-users-sample.csv"),
-                   ("training", "knowbe4-training-sample.csv"), ("phishing", "knowbe4-phishing-sample.csv")):
+                   ("training", "knowbe4-training-sample.csv"), ("phishing", "knowbe4-phishing-sample.csv"),
+                   ("aws-iam-credential-report", "aws-iam-credential-report-sample.csv")):
         pkg, out = cli_roundtrip("csv " + src, "exportcsv.py", ["--csv", os.path.join(FIX, f), "--source", src], emap, rubrics)
     signed_forgery("csv", pkg)
     pkg, out = cli_roundtrip("csv gworkspace (score)", "exportcsv.py",

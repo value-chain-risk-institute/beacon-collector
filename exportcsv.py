@@ -16,13 +16,17 @@ Sources:
                    people-v1:jml (suspended accounts still present)
   training         KnowBe4-style training campaign CSV -> unmapped (no evidence-map slot)
   phishing         KnowBe4-style phishing test results CSV -> unmapped (no evidence-map slot)
+  aws-iam-credential-report
+                   AWS IAM credential report CSV (column names are AWS-documented).
+                   -> people-v1:mfa (console users with MFA; root MFA kept beside it),
+                   technology-v1:2.2a (active access keys, rotation age, unused keys)
 
 Header matching is by normalized name (case, spaces, punctuation and Google's
 "[READ ONLY]" suffixes ignored) against the aliases below. The aliases are written
 from vendor documentation and have NOT yet been checked against a real tenant's
 download; an unrecognized header fails loudly rather than guessing.
 
-  exportcsv.py collect --csv FILE --source entra-mfa|gworkspace-users|training|phishing [--subject NAME]
+  exportcsv.py collect --csv FILE --source entra-mfa|gworkspace-users|training|phishing|aws-iam-credential-report [--subject NAME]
   exportcsv.py verify out-exportcsv/package.json
 """
 import argparse
@@ -31,6 +35,7 @@ import io
 import os
 import re
 import sys
+from datetime import datetime, timezone
 
 import adapterkit as ak
 import beaconlib as bl
@@ -145,7 +150,46 @@ def phishing(rows):
         "note": "counts from the simulation export; a timestamp in a *At column counts as the event"})}
 
 
-SOURCES = {"entra-mfa": entra_mfa, "gworkspace-users": gworkspace_users,
+def _age_days(v, now):
+    d = ak._parse_ts(v)
+    return (now - d).days if d else None
+
+
+def aws_iam(rows, now=None):
+    now = now or datetime.now(timezone.utc)
+    if rows and "passwordenabled" not in rows[0]:
+        raise ValueError("not an AWS IAM credential report (no password_enabled column)")
+    root = [r for r in rows if r.get("user") == "<root_account>"]
+    users = [r for r in rows if r.get("user") != "<root_account>"]
+    console = [r for r in users if boolish(r.get("passwordenabled")) is True]
+    on = [r for r in console if boolish(r.get("mfaactive")) is True]
+    n = len(console)
+    mfa = {"present": bool(rows), "active_accounts": n, "mfa_enabled": len(on),
+           "coverage_fraction": round(len(on) / n, 3) if n else None,
+           "accounts_without_mfa": sorted(r["user"] for r in console if r not in on),
+           "root_mfa_active": (boolish(root[0].get("mfaactive")) if root else None),
+           "basis": "iam-console-users",
+           "note": "IAM users with a console password; federated (SSO) users are not in this report"}
+    keys = []
+    for r in users:
+        for i in ("1", "2"):
+            if boolish(r.get("accesskey%sactive" % i)) is True:
+                keys.append({"user": r["user"],
+                             "rotated_days_ago": _age_days(r.get("accesskey%slastrotated" % i), now),
+                             "last_used_days_ago": _age_days(r.get("accesskey%slastuseddate" % i), now)})
+    ages = [k["rotated_days_ago"] for k in keys if k["rotated_days_ago"] is not None]
+    svc = {"present": bool(rows), "active_access_keys": len(keys),
+           "oldest_rotation_days": max(ages) if ages else None,
+           "keys_rotated_over_90_days": sum(1 for a in ages if a > 90),
+           "keys_never_used_or_idle_over_90_days": sum(1 for k in keys if k["last_used_days_ago"] is None
+                                                 or k["last_used_days_ago"] > 90),
+           "root_access_keys_active": sum(1 for r in root for i in ("1", "2")
+                                          if boolish(r.get("accesskey%sactive" % i)) is True),
+           "note": "long-lived IAM access keys as observed in the credential report; ages at collection time"}
+    return {"people-v1:mfa": ("mfa", mfa), "technology-v1:2.2a": ("iam_access_keys", svc)}
+
+
+SOURCES = {"entra-mfa": entra_mfa, "gworkspace-users": gworkspace_users, "aws-iam-credential-report": aws_iam,
            "training": training, "phishing": phishing}
 GAP = ("no evidence-map slot for security-awareness training / phishing-simulation results",
        ["people-v1/4b", "people-v1/5b", "people-v1/4c"])
