@@ -133,7 +133,7 @@ does not need:
 `collector.py` scanner mode (Trivy) · `docs.py` document mode (SOC 2 / pen-test ingest) ·
 `exportmode.py` export mode (IdP) · `enroll.py` Ed25519 identity + signing · `merge.py`
 multi-box aggregation · `beaconlib.py` shared seal/sign/verify · `report.py` local report ·
-`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP) · `anchors.py` + `anchor.py` timestamp/OTS/Rekor anchoring and offline verify · `scheduled.py` scheduled mode (series, chain, upgrade) · `score.py` free reference scorer (+ `scorer-evidence-map-v0.json`, `rubrics/`).
+`securityonion.py` Security Onion / Wazuh adapter (WIP) · `send.py` send layer (PQC channel WIP) · `anchors.py` + `anchor.py` timestamp/OTS/Rekor anchoring and offline verify · `scheduled.py` scheduled mode (series, chain, upgrade) · `score.py` free reference scorer (+ `scorer-evidence-map-v0.json`, `rubrics/`). Adapters (2026-09-30, `ADAPTER-ROADMAP.md`): `sbommode.py` SBOM · `scorecardmode.py` OpenSSF Scorecard · `outsidein.py` SPF/DMARC/TLS for your own domain · `exportcsv.py` Entra, Google Workspace, KnowBe4-style, AWS IAM CSV exports · `oscalmode.py` OSCAL JSON · `adapterkit.py` shared plumbing.
 
 `SPEC.md` product spec + invariants · `EVIDENCE-SCHEMA-and-source-map-v0.1.md` data spec ·
 `JAWNCON-MVP-PLAN.md` the deployment plan.
