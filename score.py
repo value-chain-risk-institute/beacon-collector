@@ -15,7 +15,7 @@ Rules of the house, in code:
     coverage percentage so nobody mistakes sparse evidence for a bad posture.
   - Leveling is not this file's opinion. Every rule lives in the evidence map
     (VCRI's, versioned, public). This file applies them and shows its work.
-  - Evidence class is the ceiling (observed 4, attested 2, stated 1). Level 5 is
+  - Evidence class is the ceiling (observed 4, recorded 3, attested 2, stated 1). Level 5 is
     never awarded here. Observed beats attested on the same subcriterion, and the
     disagreement is reported as a contradiction rather than averaged away.
   - Collector slots with no home in the rubric are reported as gaps.
@@ -30,7 +30,7 @@ import contextlib
 import beaconlib as bl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CLASS_RANK = {"observed": 3, "attested": 2, "stated": 1, "unknown": 0}
+CLASS_RANK = {"observed": 4, "recorded": 3, "attested": 2, "stated": 1, "unknown": 0}
 
 
 def load(path):

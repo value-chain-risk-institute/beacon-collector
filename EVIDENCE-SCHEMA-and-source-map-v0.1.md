@@ -133,3 +133,7 @@ Downstream (open scorer or CRC) reads `observation` per subcriterion, applies th
 1. Nail the `evidence-package/v0` schema (this doc's JSON) as the CC-BY spec — it's what Doug builds against and what the scorer/CRC consume.
 2. Fix spike 0: remove the scoring; collector emits the sealed evidence package, no level.
 3. One tool at a time: Trivy adapter → Wazuh adapter → document collector.
+
+## Addendum 2026-09-30: the "recorded" evidence class (Joshua's decision)
+
+New item-level epistemic label `recorded_export`, scored as class `recorded`, cap 3 (observed 4 > recorded 3 > attested 2 > stated 1). Recorded means system-generated records of past activity that the org exports (training completions, phishing-simulation results, restore-job history, change tickets): stronger than a claim because a system wrote it at the time, weaker than observed because the org chooses the export and it describes the past, not current state. First users: exportcsv `training` and `phishing` sources.

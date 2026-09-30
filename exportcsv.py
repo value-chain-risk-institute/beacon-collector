@@ -14,8 +14,8 @@ Sources:
   gworkspace-users Google Workspace Admin console user list CSV (Users > Download).
                    -> people-v1:mfa (2SV enrolled; enforced count kept beside it),
                    people-v1:jml (suspended accounts still present)
-  training         KnowBe4-style training campaign CSV -> unmapped (no evidence-map slot)
-  phishing         KnowBe4-style phishing test results CSV -> unmapped (no evidence-map slot)
+  training         KnowBe4-style training campaign CSV -> people-v1:awareness-training (4b), recorded
+  phishing         KnowBe4-style phishing test results CSV -> people-v1:phishing-resistance (4c), recorded
   aws-iam-credential-report
                    AWS IAM credential report CSV (column names are AWS-documented).
                    -> people-v1:mfa (console users with MFA; root MFA kept beside it),
@@ -128,8 +128,10 @@ def training(rows):
         counts[r[st] or "(blank)"] = counts.get(r[st] or "(blank)", 0) + 1
     done = [r for r in rows if norm(r[st]) in ("completed", "passed")]
     done_users = {r[u] for r in done}
-    return {ak.UNMAPPED: ("training", {
-        "present": bool(rows), "enrollments": len(rows), "users": len({r[u] for r in rows}),
+    users = {r[u] for r in rows}
+    return {"people-v1:awareness-training": ("training", {
+        "present": bool(rows), "enrollments": len(rows), "users": len(users),
+        "completion_fraction": round(len(done_users & users) / len(users), 3) if users else None,
         "completed": len(done), "by_status": dict(sorted(counts.items())),
         "users_with_incomplete_enrollment": sorted({r[u] for r in rows if norm(r[st]) not in ("completed", "passed")})[:200],
         "users_with_no_completion": len({r[u] for r in rows} - done_users)})}
@@ -142,9 +144,10 @@ def phishing(rows):
     rp = col(keys, "reported", "reportedat")
     de = col(keys, "dataentered", "dataenteredat")
     hit = lambda r, c: bool(c) and (boolish(r[c]) is True or (boolish(r[c]) is None and r[c] != ""))
-    return {ak.UNMAPPED: ("phishing_simulation", {
+    clicked = sum(1 for r in rows if hit(r, ck))
+    return {"people-v1:phishing-resistance": ("phishing_simulation", {
         "present": bool(rows), "recipients": len(rows),
-        "clicked": sum(1 for r in rows if hit(r, ck)),
+        "clicked": clicked, "click_fraction": round(clicked / len(rows), 3) if rows else None,
         "reported": sum(1 for r in rows if hit(r, rp)) if rp else None,
         "data_entered": sum(1 for r in rows if hit(r, de)) if de else None,
         "note": "counts from the simulation export; a timestamp in a *At column counts as the event"})}
@@ -191,6 +194,8 @@ def aws_iam(rows, now=None):
 
 SOURCES = {"entra-mfa": entra_mfa, "gworkspace-users": gworkspace_users, "aws-iam-credential-report": aws_iam,
            "training": training, "phishing": phishing}
+# Records of past activity (Joshua 2026-09-30: own class "recorded", cap 3), not current state.
+RECORDED_SOURCES = {"training", "phishing"}
 GAP = ("no evidence-map slot for security-awareness training / phishing-simulation results",
        ["people-v1/4b", "people-v1/5b", "people-v1/4c"])
 
@@ -212,7 +217,8 @@ def collect(args):
             "access": "system-of-record-export", "source_system": args.source}
     fresh = ak.freshness(now, note="the export reflects the console's state when the org downloaded it; "
                                    "the file carries no date of its own")
-    items = [ak.make_item(slot, "export", "observed_export", True, src, prov, key, o, raw_hash, now, fresh,
+    epi = "recorded_export" if args.source in RECORDED_SOURCES else "observed_export"
+    items = [ak.make_item(slot, "export", epi, True, src, prov, key, o, raw_hash, now, fresh,
                           ak.unmapped(*GAP) if slot == ak.UNMAPPED else ak.mapped("exportcsv." + args.source))
              for slot, (key, o) in obs.items()]
     subject = {"name": args.subject or "unknown", "scope": "export:" + args.source, "collected_utc": now}

@@ -36,7 +36,7 @@ import scorecardmode
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIX = os.path.join(HERE, "samples", "adapters")
-EPISTEMIC = {"observed_scan", "observed_export", "third_party_attestation", "subject_claim"}
+EPISTEMIC = {"observed_scan", "observed_export", "recorded_export", "third_party_attestation", "subject_claim"}
 FORBIDDEN = {"grade", "level", "rating", "posture", "score"}
 fails = []
 
@@ -264,13 +264,16 @@ def main():
           (o["people-v1:mfa"][1]["mfa_enabled"], o["people-v1:mfa"][1]["active_accounts"], o["people-v1:mfa"][1]["enforced"]) == (2, 3, 1))
     check("Google: suspended account still present counted for jml", o["people-v1:jml"][1]["disabled_or_suspended_still_present"] == 1)
     o = exportcsv.training(exportcsv.read_rows(open(os.path.join(FIX, "knowbe4-training-sample.csv"), "rb").read()))
-    t = o[ak.UNMAPPED][1]
+    t = o["people-v1:awareness-training"][1]
     check("training: 4 enrollments, 3 users, 2 completed, 2 users with an incomplete enrollment",
           (t["enrollments"], t["users"], t["completed"], len(t["users_with_incomplete_enrollment"])) == (4, 3, 2, 2))
+    check("training: completion fraction 2/3 users, mapped to people-v1 4b", t["completion_fraction"] == 0.667)
     o = exportcsv.phishing(exportcsv.read_rows(open(os.path.join(FIX, "knowbe4-phishing-sample.csv"), "rb").read()))
-    p = o[ak.UNMAPPED][1]
+    p = o["people-v1:phishing-resistance"][1]
     check("phishing: 3 recipients, 1 clicked, 1 reported, 1 entered data",
           (p["recipients"], p["clicked"], p["reported"], p["data_entered"]) == (3, 1, 1, 1))
+    check("phishing: click fraction 1/3, mapped to people-v1 4c", p["click_fraction"] == 0.333)
+    check("training and phishing are recorded evidence, not observed", exportcsv.RECORDED_SOURCES == {"training", "phishing"})
     o = exportcsv.aws_iam(exportcsv.read_rows(open(os.path.join(FIX, "aws-iam-credential-report-sample.csv"), "rb").read()),
                           datetime(2026, 9, 30, tzinfo=timezone.utc))
     m, k = o["people-v1:mfa"][1], o["technology-v1:2.2a"][1]
