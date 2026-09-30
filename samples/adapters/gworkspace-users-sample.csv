@@ -1,0 +1,5 @@
+First Name [Required],Last Name [Required],Email Address [Required],Org Unit Path [Required],Status [READ ONLY],Last Sign In [READ ONLY],2sv Enrollment Status [READ ONLY],2sv Enforcement Status [READ ONLY]
+Alice,Synthetic,alice@synthetic.example,/,Active,2026/09/28 14:02:11,Enrolled,Enforced
+Bob,Synthetic,bob@synthetic.example,/,Active,2026/09/27 09:15:40,Not Enrolled,Not Enforced
+Carol,Synthetic,carol@synthetic.example,/Eng,Active,2026/09/29 17:44:03,Enrolled,Not Enforced
+Dave,Synthetic,dave@synthetic.example,/,Suspended,2026/03/01 08:00:00,Not Enrolled,Not Enforced

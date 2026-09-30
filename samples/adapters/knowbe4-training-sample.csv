@@ -1,0 +1,5 @@
+User,Email,Campaign,Module,Status,Enrollment Date,Completion Date
+Alice Synthetic,alice@synthetic.example,2026 Annual,Security Awareness 2026,Completed,2026-01-10,2026-01-15
+Bob Synthetic,bob@synthetic.example,2026 Annual,Security Awareness 2026,Past Due,2026-01-10,
+Carol Synthetic,carol@synthetic.example,2026 Annual,Security Awareness 2026,In Progress,2026-01-10,
+Carol Synthetic,carol@synthetic.example,Phishing Refresher,Spot the Phish,Completed,2026-06-01,2026-06-02

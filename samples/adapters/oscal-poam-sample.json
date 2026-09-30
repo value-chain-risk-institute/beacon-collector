@@ -1,0 +1,8 @@
+{"plan-of-action-and-milestones": {
+  "uuid": "55555555-5555-4555-8555-555555555555",
+  "metadata": {"title": "Synthetic Widget POA&M (test fixture)", "last-modified": "2026-09-12T00:00:00Z", "version": "1.0", "oscal-version": "1.1.2"},
+  "findings": [{"uuid": "pf-1", "title": "Leaver accounts", "description": "synthetic", "target": {"type": "statement-id", "target-id": "ac-2_smt.j", "status": {"state": "not-satisfied"}}}],
+  "poam-items": [
+    {"uuid": "pi-1", "title": "Automate leaver deprovisioning", "description": "synthetic", "related-findings": [{"finding-uuid": "pf-1"}]},
+    {"uuid": "pi-2", "title": "Replace legacy VPN appliance", "description": "synthetic, no linked finding"}
+  ]}}

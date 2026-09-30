@@ -1,0 +1,13 @@
+{"date": "2026-09-20T10:00:00Z",
+ "repo": {"name": "github.com/synthetic-org/synthetic-repo", "commit": "0000000000000000000000000000000000000abc"},
+ "scorecard": {"version": "v5.5.0", "commit": "c395761df6afe1a69e476bc60a013a94bcbc153f"},
+ "score": 6.1,
+ "checks": [
+  {"name": "Branch-Protection", "score": 3, "reason": "branch protection is not maximal on development and all release branches", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "Code-Review", "score": 8, "reason": "Found 24/30 approved changesets", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "SAST", "score": 0, "reason": "SAST tool is not run on all commits", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "Vulnerabilities", "score": 7, "reason": "3 existing vulnerabilities detected", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "Signed-Releases", "score": -1, "reason": "no releases found", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "Maintained", "score": 10, "reason": "30 commit(s) out of 30 and 4 issue activity found in the last 90 days", "details": null, "documentation": {"short": "synthetic"}},
+  {"name": "Security-Policy", "score": 0, "reason": "security policy file not detected", "details": null, "documentation": {"short": "synthetic"}}
+ ]}

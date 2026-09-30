@@ -49,12 +49,23 @@ MODES = {
     "scanner": ("collector.py", "collect"),
     "document": ("docs.py", "collect"),
     "export": ("exportmode.py", "collect"),
+    # adapters added 2026-09-30 (ADAPTER-ROADMAP.md); same collect/verify CLI shape
+    "sbom": ("sbommode.py", "collect"),
+    "scorecard": ("scorecardmode.py", "collect"),
+    "outside-in": ("outsidein.py", "collect"),
+    "export-csv": ("exportcsv.py", "collect"),
+    "oscal": ("oscalmode.py", "collect"),
 }
 VERIFIERS = {
     "scanner": "collector.py",
     "document": "docs.py",
     "export": "exportmode.py",
     "merge": "merge.py",
+    "sbom": "sbommode.py",
+    "scorecard": "scorecardmode.py",
+    "outside-in": "outsidein.py",
+    "export-csv": "exportcsv.py",
+    "oscal": "oscalmode.py",
 }
 
 

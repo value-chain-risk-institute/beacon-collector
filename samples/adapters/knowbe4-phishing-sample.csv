@@ -1,0 +1,4 @@
+Email,First Name,Delivered At,Opened At,Clicked At,Reported At,Data Entered At
+alice@synthetic.example,Alice,2026-09-01 09:00,2026-09-01 09:05,,2026-09-01 09:06,
+bob@synthetic.example,Bob,2026-09-01 09:00,2026-09-01 10:00,2026-09-01 10:01,,2026-09-01 10:02
+carol@synthetic.example,Carol,2026-09-01 09:00,,,,

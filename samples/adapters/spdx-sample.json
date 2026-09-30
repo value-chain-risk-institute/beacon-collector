@@ -1,0 +1,19 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "synthetic-widget-api-2.3.1 (synthetic test fixture)",
+  "documentNamespace": "https://example.invalid/spdx/synthetic-widget-api-2.3.1",
+  "creationInfo": {"created": "2026-09-02T08:30:00Z", "creators": ["Tool: trivy-0.56.0", "Organization: Synthetic Supplier Inc."]},
+  "documentDescribes": ["SPDXRef-Package-app"],
+  "packages": [
+    {"SPDXID": "SPDXRef-Package-app", "name": "synthetic-widget-api", "versionInfo": "2.3.1",
+     "supplier": "Organization: Synthetic Supplier Inc.", "licenseConcluded": "NOASSERTION", "downloadLocation": "NOASSERTION"},
+    {"SPDXID": "SPDXRef-Package-openssl", "name": "openssl", "versionInfo": "3.0.13", "supplier": "NOASSERTION",
+     "licenseConcluded": "Apache-2.0", "downloadLocation": "NOASSERTION",
+     "checksums": [{"algorithm": "SHA256", "checksumValue": "88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313"}],
+     "externalRefs": [{"referenceCategory": "PACKAGE-MANAGER", "referenceType": "purl", "referenceLocator": "pkg:deb/debian/openssl@3.0.13"}]},
+    {"SPDXID": "SPDXRef-Package-zlib", "name": "zlib", "versionInfo": "1.3.1", "licenseConcluded": "Zlib", "downloadLocation": "NOASSERTION",
+     "externalRefs": [{"referenceCategory": "PACKAGE-MANAGER", "referenceType": "purl", "referenceLocator": "pkg:deb/debian/zlib@1.3.1"}]}
+  ]
+}

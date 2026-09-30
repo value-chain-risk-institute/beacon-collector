@@ -1,0 +1,5 @@
+User principal name,User display name,User type,Admin,SSPR registered,Is MFA registered,Is MFA capable,Methods registered
+alice@synthetic.example,Alice (synthetic),Member,True,True,True,True,microsoftAuthenticatorPush
+bob@synthetic.example,Bob (synthetic),Member,False,False,False,False,
+carol@synthetic.example,Carol (synthetic),Member,False,True,True,True,fido2
+svc-backup@synthetic.example,svc-backup (synthetic),Member,True,False,False,False,

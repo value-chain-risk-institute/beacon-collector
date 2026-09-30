@@ -1,0 +1,18 @@
+{"assessment-results": {
+  "uuid": "33333333-3333-4333-8333-333333333333",
+  "metadata": {"title": "Synthetic Widget assessment (test fixture)", "last-modified": "2026-09-10T00:00:00Z", "version": "1.0", "oscal-version": "1.1.2"},
+  "import-ap": {"href": "#synthetic-ap"},
+  "results": [{"uuid": "44444444-4444-4444-8444-444444444444", "title": "Q3 2026 assessment", "start": "2026-09-01T00:00:00Z",
+    "reviewed-controls": {"control-selections": [{"include-all": {}}]},
+    "observations": [
+      {"uuid": "o-1", "description": "IdP policy export reviewed; MFA required for all users.", "methods": ["EXAMINE", "TEST"],
+       "origins": [{"actors": [{"type": "assessment-platform", "actor-uuid": "p-1"}]}], "collected": "2026-09-02T00:00:00Z"},
+      {"uuid": "o-2", "description": "Two leavers still had active accounts.", "methods": ["TEST"],
+       "origins": [{"actors": [{"type": "party", "actor-uuid": "assessor-1"}]}], "collected": "2026-09-03T00:00:00Z"}],
+    "findings": [
+      {"uuid": "f-1", "title": "MFA enforced", "description": "synthetic", "target": {"type": "objective-id", "target-id": "ia-2.1_obj", "status": {"state": "satisfied"}},
+       "related-observations": [{"observation-uuid": "o-1"}]},
+      {"uuid": "f-2", "title": "Leaver accounts not disabled", "description": "synthetic", "target": {"type": "statement-id", "target-id": "ac-2_smt.j", "status": {"state": "not-satisfied"}},
+       "related-observations": [{"observation-uuid": "o-2"}]},
+      {"uuid": "f-3", "title": "Visitor log kept", "description": "synthetic", "target": {"type": "objective-id", "target-id": "pe-8_obj", "status": {"state": "satisfied"}}}
+    ]}]}}

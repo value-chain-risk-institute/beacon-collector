@@ -37,6 +37,8 @@ jobs:
         run: python test_score.py
       - name: scheduled-mode suite (chain under the seal, tamper and break caught)
         run: python test_scheduled.py
+      - name: adapter suite (SBOM, Scorecard, outside-in, CSV exports, OSCAL; offline fixtures, forgeries refused)
+        run: python test_adapters.py
       - name: end-to-end seal on a sample export, unsigned, no network anchoring
         run: |
           printf '[{"user":"a@x","mfa_enabled":true,"status":"active"},{"user":"b@x","mfa_enabled":false,"status":"active","privileged":true}]' > /tmp/users.json
