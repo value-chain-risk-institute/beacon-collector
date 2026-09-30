@@ -234,5 +234,18 @@
     "worst_high": 2,
     "worst_critical": 1,
     "no_scan": 0
+  },
+  "attested_score_bands": {
+    "bands": [
+      [
+        8,
+        "full"
+      ],
+      [
+        4,
+        "reduced"
+      ]
+    ],
+    "note": "PROVISIONAL (2026-09-30). Third-party 0-10 check scores (e.g. OpenSSF Scorecard): mean of conclusive checks on the slot; >=8 earns the full attested level, >=4 earns one level less, below 4 earns nothing; any check at 0 earns nothing. Cut points to be revisited against Scorecard's public score distribution and pilot data; see ADAPTER-ROADMAP.md."
   }
 }

@@ -81,6 +81,15 @@ def apply_rule(rule, observation, emap):
             if scores and min(scores) == 0:
                 return None, "third-party check scored 0/10 (%s)" % ", ".join(
                     n for n, c in checks.items() if isinstance(c, dict) and c.get("third_party_check_score_0_10") == 0)
+            if scores:
+                # Bands are data in the evidence map (provisional cut points), not code.
+                full = emap["attested_present_level"]
+                mean = sum(scores) / len(scores)
+                for cut, band in emap.get("attested_score_bands", {}).get("bands", [[8, "full"], [4, "reduced"]]):
+                    if mean >= cut:
+                        lvl = full if band == "full" else max(full - 1, 1)
+                        return lvl, "third-party checks average %.1f/10 (band >= %s: %s)" % (mean, cut, band)
+                return None, "third-party checks average %.1f/10, below the lowest band" % mean
         return emap["attested_present_level"], "attestation present"
 
     if t == "steps":

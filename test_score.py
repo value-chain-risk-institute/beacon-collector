@@ -134,6 +134,16 @@ def main():
     out = sc.score_package(pkg, rubrics, emap)
     check("Scorecard check at 0/10 scores nothing", not out["rubrics"])
 
+    print("Scorecard bands (provisional cut points)")
+    full = emap["attested_present_level"]
+    def sc_rule(*vals):
+        checks = {"C%d" % i: {"third_party_check_score_0_10": v, "inconclusive": False} for i, v in enumerate(vals)}
+        return sc.apply_rule({"type": "attested_present"}, {"attested": {"present": True, "checks": checks}}, emap)[0]
+    check("average 9/10 earns the full attested level", sc_rule(9, 9) == full)
+    check("average 5/10 earns one level less", sc_rule(5, 5) == max(full - 1, 1))
+    check("average 2/10 earns nothing", sc_rule(2, 2) is None)
+    check("inconclusive checks are ignored", sc.apply_rule({"type": "attested_present"}, {"attested": {"present": True, "checks": {"a": {"third_party_check_score_0_10": 9, "inconclusive": False}, "b": {"third_party_check_score_0_10": -1, "inconclusive": True}}}}, emap)[0] == full)
+
     print("least-privilege export is scored (fix 2026-09-30)")
     pkg = build([item("people-v1:least-privilege", "observed_export",
                       {"least-privilege": {"present": True, "privileged_fraction": 0.03}})])

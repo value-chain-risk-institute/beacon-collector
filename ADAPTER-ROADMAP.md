@@ -90,3 +90,13 @@ Notes on the built set:
 7. No adverse polarity in the schema. A POA&M item is evidence of an open gap; `oscalmode.py` marks it `polarity: open_gap`, but `report.py` counts any present item as Stated coverage, so a POA&M-only package would read as coverage in the framework report. Needs a schema field the report honors.
 8. `unmapped` is an adapter convention (`subcriterion: "unmapped"` plus `mapping`), not yet part of the schema. Propose it for the v1 freeze.
 9. Slot id spelling vs rubric keys (known since 09-12) still stands; new adapters use the existing slot ids.
+
+## Provisional: third-party score bands (2026-09-30, Joshua's call: "bands, make it simple, keep an eye on where they should be")
+
+Scorecard-style 0-10 check scores on one slot are averaged over conclusive checks: 8 or above earns the full attested level, 4 to 7.9 earns one level less, below 4 earns nothing, and any check at 0 earns nothing. The cut points live in `scorer-evidence-map-v0.json` (`attested_score_bands`), so moving them is a data change, not a code change.
+
+Where the bands should really sit (open questions, revisit at the first pilot or after 10 scored packages, whichever comes first):
+- Scorecard checks are not equally hard. Maintained and License are often 10; Code-Review, Branch-Protection and Signed-Releases are often low even on healthy projects. One cut point for all checks is too crude; per-check cut points from the public distribution are the likely end state.
+- Anchor the cuts to a population, not a guess: OpenSSF publishes weekly Scorecard results for about a million repositories (public BigQuery dataset). The bands should mean something like "better than most projects" and "typical", expressed as percentiles.
+- Solo-maintainer projects score low on review checks by construction; do not let that read as negligence without context.
+- Averaging lets one strong check hide a weak one. If pilots show that, switch to "weakest conclusive check sets the band".
