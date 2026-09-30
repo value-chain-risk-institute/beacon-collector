@@ -140,7 +140,7 @@ multi-box aggregation · `beaconlib.py` shared seal/sign/verify · `report.py` l
 
 ## License
 
-Collector: open source (self-hosted). Schema `vcri.beacon.evidence-package/v0`: CC-BY, VCRI.
+Collector code: Apache License 2.0 (see `LICENSE`), self-hosted. Schema `vcri.beacon.evidence-package/v0`: CC-BY, VCRI.
 
 ## Overlays and coverage bundles (report.py)
 
