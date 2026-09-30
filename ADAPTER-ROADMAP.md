@@ -126,3 +126,9 @@ Wave 0, before any new adapter (cheap, raises what already-built adapters actual
 - Fix the `process-v1:` vs `processes-v1` prefix mismatch. Mechanical.
 - Turn on Trivy's secret scanner (one flag; covers technology 2c and data 2c). Mechanical.
 - Needs Joshua (methodology): let Observed evidence score on slots whose rules only accept attestations; decide whether "Recorded" gets its own class and cap; inherited-control and not-applicable rules for Facilities and AI.
+
+## Methodology decisions (Joshua, 2026-09-30)
+
+1. APPROVED: Observed evidence may score on slots whose rules currently accept only attestations, with three built-in caveats: (a) scope, observed credit scales with the evidence's completeness/coverage of the estate (one domain's TLS does not max out encryption in transit); (b) adverse observations lower the score (TLS 1.0, expired certificate), they do not merely fail to raise it; (c) age, observations past their freshness window drop a level or are flagged. Each slot needs its own observed rule; implementation is per-slot work, not a switch.
+2. OPEN: "Recorded" (system-generated records of past activity: training logs, restore-job history, change tickets). Cairn's proposal: its own class, cap 3, between attested (2) and observed (4); today the scorer treats such exports as observed, which overstates them. Awaiting Joshua.
+3. APPROVED with Joshua's rule: inherited and not-applicable are valid. Inherited controls score as STATED (cap 1) unless backed by a certified report (SOC 2 Type II, ISO 27001 certificate, FedRAMP authorization) that covers the control and is current (or bridged), in which case ATTESTED (cap 2). Not-applicable needs a stated reason (e.g., vendor does not train models) and is excluded from the denominator, not scored as a pass.
