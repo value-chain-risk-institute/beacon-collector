@@ -100,3 +100,29 @@ Where the bands should really sit (open questions, revisit at the first pilot or
 - Anchor the cuts to a population, not a guess: OpenSSF publishes weekly Scorecard results for about a million repositories (public BigQuery dataset). The bands should mean something like "better than most projects" and "typical", expressed as percentiles.
 - Solo-maintainer projects score low on review checks by construction; do not let that read as negligence without context.
 - Averaging lets one strong check hide a weak one. If pilots show that, switch to "weakest conclusive check sets the band".
+
+## Fast-coverage build order (2026-09-30, Joshua: "cover as much as possible as fast as possible when we start building")
+
+Method: greedy set cover over the 124-question evidence source map (`BeaconScore/2026-09-30-evidence-source-map.csv`), each rubric weighted equally, subcriteria by their rubric weights. Each step picks the adapter with the most newly covered question weight per unit of effort (S=1, M=2, L=3), discounted by the share of small and mid-size vendors likely to own that system. "Covered" means the adapter supplies evidence for the question, not that it reaches Observed. Prevalence and effort figures are Cairn's estimates, not measured; re-run `BeaconScore/coverage_plan.py` when pilots give real numbers.
+
+Starting point: built and building adapters reach 32% of question weight.
+
+| Order | Adapter | How | Effort | Vendors who have it (est.) | Expected coverage after |
+|---|---|---|---|---|---|
+| 1 | Prowler output (cloud, plus its M365 and GitHub providers) | parse the file Prowler writes (JSON/OCSF) | S | 95% | 48% |
+| 2 | ITSM export (Jira or ServiceNow CSV) | parse a saved-search CSV | S | 60% | 54% |
+| 3 | Identity API (Microsoft Graph first, then Google Admin) | read-only API | M | 99% | 59% |
+| 4 | GRC platform export (Vanta, Drata, Secureframe) | parse export | M | 40% | 62% |
+| 5 | Incident tool (PagerDuty, Opsgenie) and HRIS CSV | small API / CSV | S each | 40% / 60% | 64% |
+| then | EDR+MDM, GitHub/GitLab API, vuln scanner export, SIEM coverage | as pilots need | M to L | varies | about 67% ceiling |
+
+What the numbers say:
+1. Three adapters, about four units of effort, take expected coverage from 32% to about 59%. Prowler alone adds 16 points because Technology and Data are mostly cloud settings, and one Prowler parser also reaches M365 and GitHub settings.
+2. File-first is the speed trick. Parsing the output of a tool the vendor already runs (Prowler, a Jira export) needs no credentials, tests on fixtures, and ships in days, exactly like today's five adapters. API pulls come later for freshness and automation.
+3. Expected coverage plateaus near 67%. The rest is Facilities (most SaaS vendors own no badge or building systems: needs an "inherited from your cloud provider" rule), AI questions for vendors who do not train models (needs a not-applicable rule), and the 28 questions that need a person (the Executive Check hand-off list and interviews).
+
+Wave 0, before any new adapter (cheap, raises what already-built adapters actually score):
+- Give already-collected evidence a scorer slot: training and phishing results (people-v1 4b, 5b, 3c), process-v1:incident-response to technology-v1 6b, technology-v1 5a from branch protection. Mechanical mapping, Cairn can do it.
+- Fix the `process-v1:` vs `processes-v1` prefix mismatch. Mechanical.
+- Turn on Trivy's secret scanner (one flag; covers technology 2c and data 2c). Mechanical.
+- Needs Joshua (methodology): let Observed evidence score on slots whose rules only accept attestations; decide whether "Recorded" gets its own class and cap; inherited-control and not-applicable rules for Facilities and AI.
