@@ -144,7 +144,7 @@
       "key": "4a",
       "rule": {
         "type": "inverse_fraction_ladder",
-        "path": "least_privilege.privileged_fraction",
+        "path": "least-privilege.privileged_fraction",
         "ladder": [
           [
             0.05,

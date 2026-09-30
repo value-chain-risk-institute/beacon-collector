@@ -65,9 +65,23 @@ def apply_rule(rule, observation, emap):
     t = rule.get("type")
     if t == "attested_present":
         present = get_path(observation, "attested.present")
-        if present:
-            return emap["attested_present_level"], "attestation present"
-        return None, "no attestation in observation"
+        if not present:
+            return None, "no attestation in observation"
+        # An attestation that reports failure is adverse evidence, not credit.
+        # OSCAL assessment results carry satisfied/not_satisfied counts; OpenSSF
+        # Scorecard relays per-check 0-10 scores (-1 = inconclusive).
+        not_sat = get_path(observation, "attested.not_satisfied")
+        if isinstance(not_sat, int) and not_sat > 0:
+            return None, "attestation reports %d not-satisfied finding(s)" % not_sat
+        checks = get_path(observation, "attested.checks")
+        if isinstance(checks, dict):
+            scores = [c.get("third_party_check_score_0_10") for c in checks.values()
+                      if isinstance(c, dict) and not c.get("inconclusive")]
+            scores = [x for x in scores if isinstance(x, (int, float))]
+            if scores and min(scores) == 0:
+                return None, "third-party check scored 0/10 (%s)" % ", ".join(
+                    n for n, c in checks.items() if isinstance(c, dict) and c.get("third_party_check_score_0_10") == 0)
+        return emap["attested_present_level"], "attestation present"
 
     if t == "steps":
         level, why = None, []

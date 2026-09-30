@@ -124,6 +124,22 @@ def main():
     check("two gaps: no rubric home, and unknown slot", len(out["gaps"]) == 2)
     check("nothing scored from gap items", not out["rubrics"])
 
+    print("adverse attestations earn no credit (fix 2026-09-30)")
+    pkg = build([item("technology-v1:1.1a", "third_party_attestation",
+                      {"attested": {"present": True, "satisfied": 0, "not_satisfied": 2}}, mode="oscal")])
+    out = sc.score_package(pkg, rubrics, emap)
+    check("OSCAL not-satisfied findings score nothing", not out["rubrics"])
+    pkg = build([item("technology-v1:1.1a", "third_party_attestation",
+                      {"attested": {"present": True, "checks": {"Vulnerabilities": {"third_party_check_score_0_10": 0, "inconclusive": False}}}}, mode="scorecard")])
+    out = sc.score_package(pkg, rubrics, emap)
+    check("Scorecard check at 0/10 scores nothing", not out["rubrics"])
+
+    print("least-privilege export is scored (fix 2026-09-30)")
+    pkg = build([item("people-v1:least-privilege", "observed_export",
+                      {"least-privilege": {"present": True, "privileged_fraction": 0.03}})])
+    out = sc.score_package(pkg, rubrics, emap)
+    check("least-privilege observation reaches people-v1", "people-v1" in out["rubrics"])
+
     print("fail closed via the CLI")
     tmp = tempfile.mkdtemp()
     pkg = build([item("people-v1:mfa", "observed_export", {"mfa": {"coverage_fraction": 0.9}})])
