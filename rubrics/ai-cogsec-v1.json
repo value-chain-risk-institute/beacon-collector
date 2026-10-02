@@ -1,7 +1,7 @@
 {
   "id": "ai-cogsec-v1",
   "title": "VCRI Cogsec Assessment Methodology v1",
-  "source": "2026-05-31-cogsec-assessment-methodology-v1.md ; v1.1 2026-06-25: +3 subcriteria from M. Parker/Wally 'AI Security System Architecture Layers' v2 (agent identity, audit-log integrity, MCP/interface containment), co-credited.",
+  "source": "2026-05-31-cogsec-assessment-methodology-v1.md ; v1.1 2026-06-25: +3 subcriteria from M. Parker/Wally 'AI Security System Architecture Layers' v2 (agent identity, audit-log integrity, MCP/interface containment), co-credited. ; v1.3 2026-09-27: +2 subcriteria (1g decommissioning, 4z synthetic-content provenance marking) from M. Parker/Wallis TIPPSS on-device AI safety draft, co-credited; + TIPPSS view (derived).",
   "scaleMax": 5,
   "hardFail": {
     "belowDimension": 2,
@@ -48,7 +48,7 @@
         {
           "key": "1a",
           "title": "Training data provenance and curation",
-          "weight": 0.25,
+          "weight": 0.2143,
           "anchors": [
             "No documentation of training data sources.",
             "Partial inventory of training data sources. No trust-tiering of sources.",
@@ -61,7 +61,7 @@
         {
           "key": "1b",
           "title": "Fine-tuning controls and audit",
-          "weight": 0.2,
+          "weight": 0.1714,
           "anchors": [
             "Fine-tuning performed without documentation.",
             "Fine-tuning is logged but with no pre-execution review or post-execution safety evaluation.",
@@ -74,7 +74,7 @@
         {
           "key": "1c",
           "title": "Model artifact integrity",
-          "weight": 0.15,
+          "weight": 0.1286,
           "anchors": [
             "Model artifacts loaded without integrity checks. Pickle / unsafe formats accepted.",
             "Format declared. Pickle accepted with no scanning.",
@@ -87,7 +87,7 @@
         {
           "key": "1d",
           "title": "Persona and value-content curation",
-          "weight": 0.15,
+          "weight": 0.1286,
           "anchors": [
             "No deliberate curation of persona, voice, or value content.",
             "Persona/value content authored but not reviewed against emergent-misalignment risk.",
@@ -100,7 +100,7 @@
         {
           "key": "1e",
           "title": "Backdoor / sleeper-agent regression testing",
-          "weight": 0.15,
+          "weight": 0.1286,
           "anchors": [
             "No regression testing against known backdoor or sleeper-agent patterns.",
             "Ad-hoc testing post-incident only.",
@@ -113,7 +113,7 @@
         {
           "key": "1f",
           "title": "Anti-poisoning posture (small-N threat awareness)",
-          "weight": 0.1,
+          "weight": 0.0857,
           "anchors": [
             "No awareness of small-N data-poisoning threats. Training-data inclusion policy based on percentage thresholds (which provide false comfort per Anthropic 2025).",
             "Awareness present but no operational controls.",
@@ -121,6 +121,20 @@
             "All of #2 + automated flagging of sources contributing more than the stated absolute-count threshold for human review.",
             "All of #3 + provenance tier required for any source above the threshold (cannot be \"internet-scraped, unsourced\" above a defined count).",
             "All of #4 + retrospective analysis of corpus composition published with each major model release showing the source-count distribution."
+          ]
+        },
+        {
+          "key": "1g",
+          "title": "Model, memory and credential decommissioning",
+          "weight": 0.1429,
+          "credit": "Derived from M. Parker / Wallis, TIPPSS on-device AI safety draft (Sec-004 secure erasure, broadened to decommissioning), 2026-09-27; NIST AI RMF GOVERN 1.7.",
+          "anchors": [
+            "No process for retiring models, memory stores or agent credentials; retired systems keep running or keep access.",
+            "Ad hoc retirement; weights, memory and keys are often left in place.",
+            "Documented decommissioning procedure for model versions; credentials revoked on retirement.",
+            "All of #2 + retired weights, fine-tunes and durable memory securely erased, or archived under access control, with records kept.",
+            "All of #3 + verified erasure (cryptographic erasure or zeroization evidence) and inventory updated; dependent agents and workflows identified before retirement.",
+            "All of #4 + decommissioning is tested, audited and triggered at end of support; no orphaned agent identities or credentials remain."
           ]
         }
       ]
@@ -290,7 +304,7 @@
         {
           "key": "4a",
           "title": "Human-in-the-loop gating for irreversible actions",
-          "weight": 0.2143,
+          "weight": 0.1875,
           "anchors": [
             "Destructive/irreversible actions (deletes, force-push, mail, payments, credential/OTP handling) execute without gates.",
             "Some actions gated by ad-hoc convention.",
@@ -303,7 +317,7 @@
         {
           "key": "4b",
           "title": "Tool capability-scoping, signing/pinning, allow-listing",
-          "weight": 0.1786,
+          "weight": 0.1563,
           "anchors": [
             "Tools loaded unscoped and unverified; descriptions trusted blindly.",
             "Tool inventory exists; no scoping or verification.",
@@ -316,7 +330,7 @@
         {
           "key": "4c",
           "title": "Egress and output controls",
-          "weight": 0.1429,
+          "weight": 0.125,
           "anchors": [
             "No egress allow-listing; markdown images auto-fetch; encoded data passes through outputs.",
             "Partial egress controls.",
@@ -329,7 +343,7 @@
         {
           "key": "4d",
           "title": "Tool metadata/output treated as untrusted",
-          "weight": 0.1071,
+          "weight": 0.0937,
           "anchors": [
             "Tool descriptions and tool output are treated as trusted instructions.",
             "Output sometimes sanitized; metadata trusted.",
@@ -342,7 +356,7 @@
         {
           "key": "4e",
           "title": "Dependency-execution safety",
-          "weight": 0.0714,
+          "weight": 0.0625,
           "anchors": [
             "Agent auto-executes against unreviewed dependency code (the jqwik-injection class).",
             "Execution allowed with minimal review.",
@@ -355,7 +369,7 @@
         {
           "key": "4x",
           "title": "Audit-log integrity",
-          "weight": 0.1429,
+          "weight": 0.125,
           "credit": "Baseline 'log everything with cryptographic integrity' per M. Parker v2; transparency-log tier = VCRI cogsec (SCITT/in-toto/cosign floor).",
           "anchors": [
             "Actions/outputs not logged, or logs are mutable and forgeable.",
@@ -369,7 +383,7 @@
         {
           "key": "4y",
           "title": "Tool / MCP / interface containment",
-          "weight": 0.1429,
+          "weight": 0.125,
           "credit": "Sandbox scope incl. MCPs + interfaces per M. Parker v2.",
           "anchors": [
             "Models, MCP servers, interfaces, and tools run with ambient privilege; no sandbox; external API reachable by default.",
@@ -378,6 +392,20 @@
             "All of #2 + network segmentation with explicit ingress/egress allow-listing; external API blocked by default.",
             "All of #3 + explicit per-transaction resource / timeout / memory limits.",
             "All of #4 + independent test of containment (escape attempts, blast-radius probes) with documented results."
+          ]
+        },
+        {
+          "key": "4z",
+          "title": "Synthetic-content provenance marking",
+          "weight": 0.125,
+          "credit": "Derived from M. Parker / Wallis, TIPPSS on-device AI safety draft (S-004 watermarking, S-005 content hashes), 2026-09-27; anchored to EU AI Act Art. 50(2) and the Commission Code of Practice on Transparency of AI-Generated Content (2026-06-10).",
+          "anchors": [
+            "AI-generated output carries no marking or provenance; recipients cannot tell it is synthetic.",
+            "Human-readable disclosure only (a label or notice), applied inconsistently.",
+            "Consistent disclosure of AI-generated output at the point of use; no machine-readable marking.",
+            "Machine-readable marking on generated media and text (metadata or watermark), detectable with the provider's tools.",
+            "All of #3 + cryptographically signed, timestamped provenance metadata (content credentials) plus imperceptible watermarking: the layered approach in the EU Code of Practice.",
+            "All of #4 + marking survives common transformations, is independently verifiable by third parties, and its robustness is tested and published (EU AI Act Art. 50(2) ready)."
           ]
         }
       ]
@@ -586,5 +614,60 @@
         }
       ]
     }
-  ]
+  ],
+  "tippssMap": {
+    "Trust": [
+      "1a",
+      "1d",
+      "6a",
+      "6b",
+      "6c",
+      "6d",
+      "7a",
+      "7b",
+      "7c",
+      "7d",
+      "7e"
+    ],
+    "Identity": [
+      "5x",
+      "5a",
+      "2a"
+    ],
+    "Privacy": [
+      "4c",
+      "3e"
+    ],
+    "Protection": [
+      "1b",
+      "1c",
+      "2c",
+      "2e",
+      "3c",
+      "4b"
+    ],
+    "Safety": [
+      "1e",
+      "1f",
+      "4a",
+      "5b",
+      "5c",
+      "4z"
+    ],
+    "Security": [
+      "2b",
+      "2d",
+      "3a",
+      "3b",
+      "3d",
+      "3x",
+      "4d",
+      "4e",
+      "4x",
+      "4y",
+      "5d",
+      "1g"
+    ]
+  },
+  "tippssNote": "TIPPSS view: each cognitive security subcriterion rolls up to one TIPPSS principle (Trust, Identity, Privacy, Protection, Safety, Security; IEEE/UL 2933). Pillar score = mean of its subcriteria. Derived view only; grades are unchanged. Mapping v0.1, first pass pending review by VCRI's TIPPSS authority."
 }
