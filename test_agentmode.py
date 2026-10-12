@@ -337,6 +337,24 @@ class FullCollect(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("TAMPERED blob", r.stdout)
 
+    def test_transcripts_off_by_default(self):
+        """No operator-named root: no transcript is read, and H18 says why."""
+        self.env.pop("BEACON_TRANSCRIPT_ROOT")
+        self.env["HOME"] = self.d  # even the default root would be empty here
+        os.makedirs(os.path.join(self.d, ".claude", "projects", "p"))
+        shutil.copy(os.path.join(self.root, "p", "s.jsonl"),
+                    os.path.join(self.d, ".claude", "projects", "p", "s.jsonl"))
+        r = self.am("collect", "--reason", "default-off")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        pkg_path = glob.glob(os.path.join(self.d, "agent", "packages", "*", "package.json"))[0]
+        with open(pkg_path) as f:
+            pkg = json.load(f)
+        h18 = next(it for it in pkg["items"] if it["subcriterion"] == "agent-v0:H18")
+        tx = h18["observation"]["transcript"]
+        self.assertEqual((h18["observation"]["claim_sources"]["records"], tx["enabled"]), (0, False))
+        self.assertIn("never read on defaults", tx["boundary"])
+        self.assertIn("no change", self.am("tick").stdout)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

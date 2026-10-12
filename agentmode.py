@@ -53,7 +53,12 @@ import pairing  # noqa: E402
 import spool as action_spool  # noqa: E402
 
 VERSION = "0.3.0-dev"
-TRANSCRIPT_ROOT = os.environ.get("BEACON_TRANSCRIPT_ROOT", claude_transcripts.DEFAULT_ROOT)
+# Transcript capture is OFF unless an operator names a root. On a household box the
+# default root (~/.claude/projects) holds the sessions of persons, not tools, and
+# nothing about a person's actions is collected on defaults (spec 3.6; Joshua
+# 2026-10-12: "leave it off you for now"). Name a root that holds only tool
+# sessions, for example a pilot org's coding-agent account.
+TRANSCRIPT_ROOT = os.environ.get("BEACON_TRANSCRIPT_ROOT") or None
 OLLAMA_URL = os.environ.get("BEACON_OLLAMA_URL", "http://127.0.0.1:11434")
 HEARTBEAT_SECONDS = 6 * 3600
 DEFAULT_STATE = "~/.beacon/agent"
@@ -515,8 +520,12 @@ def gather_actions(paths, state):
     key = actionlib.load_key(paths["dir"])
     hook_records, spool_cursors, spool_findings, spool_stats = action_spool.read(
         paths["dir"], state.get("spool_cursors", {}))
-    tx_records, tx_cursors, tx_findings, tx_stats = claude_transcripts.read(
-        state.get("transcript_cursors"), key, root=TRANSCRIPT_ROOT)
+    if TRANSCRIPT_ROOT:
+        tx_records, tx_cursors, tx_findings, tx_stats = claude_transcripts.read(
+            state.get("transcript_cursors"), key, root=TRANSCRIPT_ROOT)
+    else:
+        tx_records, tx_cursors, tx_findings = [], state.get("transcript_cursors"), []
+        tx_stats = {"files": 0, "enabled": False}
     return {"records": hook_records + tx_records,
             "hook": {"records": len(hook_records), "findings": spool_findings,
                      "stats": spool_stats, "failures": action_spool.failures(paths["dir"]),
@@ -548,6 +557,8 @@ def actions_pending(paths, state):
             continue
         if n != cur.get(name, {}).get("lines", 0):
             return True
+    if not TRANSCRIPT_ROOT:
+        return False
     tx = state.get("transcript_cursors")
     if tx is None:
         return True
@@ -581,6 +592,10 @@ def obs_h18_action_ledger(fx):
                      "records": a["hook"]["records"], "findings": a["hook"]["findings"],
                      "stats": a["hook"]["stats"], "failures": a["hook"]["failures"]},
             "transcript": {"present": a["transcript"]["stats"]["files"] > 0,
+                           "enabled": bool(TRANSCRIPT_ROOT),
+                           "boundary": None if TRANSCRIPT_ROOT else
+                               "not enabled: no transcript root named by the operator; "
+                               "household person sessions are never read on defaults",
                            "records": a["transcript"]["records"],
                            "findings": a["transcript"]["findings"],
                            "stats": a["transcript"]["stats"],

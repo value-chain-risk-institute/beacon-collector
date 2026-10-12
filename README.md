@@ -170,7 +170,7 @@ While it runs, the collector has one listening port, bound to 127.0.0.1. A non-l
 
 Agent mode now seals what the agent did, not only how it was configured. Five new items:
 
-- H18 agent-action-ledger: prompts, model turns, tool calls and results from two claim sources, the Claude Code hook (`hooks/beacon_action_hook.py`, hash-chained daily spool) and the Claude Code transcripts (`sources/claude_transcripts.py`, sealed prefixes so a rewritten transcript is a located finding). Graded as the agent's own account.
+- H18 agent-action-ledger: prompts, model turns, tool calls and results from two claim sources, the Claude Code hook (`hooks/beacon_action_hook.py`, hash-chained daily spool) and the Claude Code transcripts (`sources/claude_transcripts.py`, sealed prefixes so a rewritten transcript is a located finding). Graded as the agent's own account. Transcript capture is off unless the operator names a root with `BEACON_TRANSCRIPT_ROOT`; on a box where agents are persons, not tools, it stays off, and H18 records that as a boundary.
 - H19 vendor record, H20 OS-observed effects, H21 cloud credential activity: recorded as absent until a source is configured.
 - H22 action-pairing delta: derived set arithmetic over H18 (which calls each source saw, and whether their committed inputs agree).
 
