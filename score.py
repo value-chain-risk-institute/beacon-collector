@@ -19,6 +19,8 @@ Rules of the house, in code:
     never awarded here. Observed beats attested on the same subcriterion, and the
     disagreement is reported as a contradiction rather than averaged away.
   - Collector slots with no home in the rubric are reported as gaps.
+  - A policy excerpt (document ingester, crosswalked) scores only when a named human
+    confirmed it, at the evidence map's stated_present_level, under the stated cap.
 """
 import argparse
 import io
@@ -92,6 +94,20 @@ def apply_rule(rule, observation, emap):
                 return None, "third-party checks average %.1f/10, below the lowest band" % mean
         return emap["attested_present_level"], "attestation present"
 
+    if t == "stated_present":
+        # A policy excerpt the document ingester sealed against a crosswalked clause.
+        # Only a pointer a named human confirmed earns anything; the class cap (1)
+        # does the rest. The level is data in the evidence map, like attested's.
+        if not get_path(observation, "stated.present"):
+            return None, "no stated evidence in observation"
+        if get_path(observation, "stated.human_confirmed") is not True:
+            return None, "policy pointer not confirmed by a human; proposals are not scored"
+        clauses = get_path(observation, "stated.clauses") or []
+        ids = ", ".join(str(c.get("clause_id")) for c in clauses if isinstance(c, dict))
+        fw = get_path(observation, "stated.framework.id")
+        return emap.get("stated_present_level", 1), "policy states it (human-confirmed verbatim excerpt%s)" % (
+            ": %s %s" % (fw, ids) if ids else "")
+
     if t == "steps":
         level, why = None, []
         for step in rule["steps"]:
@@ -162,6 +178,11 @@ def score_package(pkg, rubrics, emap):
             # on the MFA subcriterion; it does not become unscorable because the
             # slot's rule wants a coverage fraction that a document never carries.
             rule = {"type": "attested_present"}
+        elif cls == "stated" and get_path(obs, "stated.present") is not None:
+            # Same reasoning for a policy statement: a confirmed excerpt saying "MFA is
+            # required" is stated evidence (cap 1) on the MFA subcriterion, whatever
+            # the slot's observed-evidence rule expects.
+            rule = {"type": "stated_present"}
         raw, why = apply_rule(rule, obs, emap)
         level = None if raw is None else min(raw, cap)
         rec = {"slot": slot, "class": cls, "cap": cap, "raw_level": raw, "level": level,

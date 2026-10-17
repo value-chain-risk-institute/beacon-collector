@@ -1,0 +1,27 @@
+{
+  "_schema": "vcri.beacon.crosswalk/v0",
+  "_status": "DRAFT, methodology PROPOSAL for VCRI to ratify (Cairn Viktor, 2026-10-16). NOT ratified. A handful of illustrative entries so the ingester-to-scorer path can be exercised; it is not a crosswalk of CIS v8.1. Every target below is an argument, not a ruling: VCRI's change log decides.",
+  "id": "cis-8.1-to-vcri-rubrics",
+  "version": "0.0.1-draft",
+  "status": "draft-unratified",
+  "framework": {"ids": ["cis-8.1"], "note": "the official CIS OSCAL catalog, fetched at run time (catalogs/index.json); clause ids are the safeguard numbers"},
+  "evidence_class": "stated",
+  "entries": [
+    {"clause_id": "1.1", "targets": [{"rubric": "technology-v1", "key": "1a"}],
+     "rationale": "enterprise asset inventory is the inventory half of 'Asset inventory and software provenance/SBOM'"},
+    {"clause_id": "6.3", "targets": [{"rubric": "people-v1", "key": "2a"}],
+     "rationale": "MFA required for externally exposed applications speaks to authentication strength"},
+    {"clause_id": "6.5", "targets": [{"rubric": "people-v1", "key": "2a"}],
+     "rationale": "MFA for administrative access, same subcriterion"},
+    {"clause_id": "7.1", "targets": [{"rubric": "technology-v1", "key": "4a"}],
+     "rationale": "a documented vulnerability management process is the policy side of 'Vulnerability and patch management'"},
+    {"clause_id": "8.2", "targets": [{"rubric": "technology-v1", "key": "6a"}],
+     "rationale": "collecting audit logs is a precondition of security monitoring coverage; arguable, data-v1 6a is the other candidate"},
+    {"clause_id": "11.2", "targets": [{"rubric": "data-v1", "key": "5b"}],
+     "rationale": "automated backups; technology-v1 5b (resilience, backup and DR) is the other candidate and has no evidence-map slot yet"},
+    {"clause_id": "14.1", "targets": [{"rubric": "people-v1", "key": "4b"}],
+     "rationale": "a security awareness program; the observed counterpart is the training completion export"},
+    {"clause_id": "17.4", "targets": [{"rubric": "technology-v1", "key": "6b"}],
+     "rationale": "incident response process; technology-v1 6b has NO evidence-map slot, so this entry demonstrates the gap path (emitted unmapped, reported by score.py)"}
+  ]
+}

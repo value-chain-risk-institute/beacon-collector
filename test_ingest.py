@@ -517,6 +517,93 @@ class ConfirmPage(unittest.TestCase):
                 self.assertFalse(m["human"]["confirmed"])
 
 
+class Crosswalk(unittest.TestCase):
+    CW_R3 = os.path.join(HERE, "crosswalks", "DRAFT-nist-sp800-171r3-to-vcri-rubrics.json")
+    CW_CIS = os.path.join(HERE, "crosswalks", "DRAFT-cis-8.1-to-vcri-rubrics.json")
+
+    def test_load_and_refusals(self):
+        r3 = il.load_framework(open(R3, "rb").read(), R3)
+        cw = il.load_crosswalk(self.CW_R3, r3)
+        self.assertEqual(cw["status"], "draft-unratified")
+        self.assertEqual(cw["sha256"], file_sha(self.CW_R3))
+        self.assertIn("03.05.03", cw["entries"])
+        with self.assertRaises(il.CatalogError):
+            il.load_crosswalk(self.CW_CIS, r3)  # wrong framework
+        bad = os.path.join(tempfile.mkdtemp(), "bad.json")
+        json.dump({"_schema": il.CROSSWALK_SCHEMA, "framework": {"ids": ["nist-sp800-171r3"]},
+                   "entries": [{"clause_id": "99.99.99", "targets": [{"rubric": "people-v1", "key": "2a"}]}]},
+                  open(bad, "w"))
+        with self.assertRaises(il.CatalogError):
+            il.load_crosswalk(bad, r3)  # clause not in the catalog
+
+    def test_cis_draft_is_small_labeled_and_bound_to_the_official_catalog(self):
+        doc = json.load(open(self.CW_CIS))
+        self.assertIn("draft", doc["status"])
+        self.assertIn("NOT ratified", doc["_status"])
+        self.assertLessEqual(len(doc["entries"]), 10, "a handful of examples, not a crosswalk")
+        self.assertEqual(doc["framework"]["ids"], ["cis-8.1"])
+        with self.assertRaises(il.CatalogError):
+            il.load_crosswalk(self.CW_CIS, il.load_framework(open(FW, "rb").read(), FW))  # the sample is not CIS
+
+    def test_resolve_slot(self):
+        emap = im.load_emap()
+        self.assertEqual(il.resolve_slot(emap, "people-v1", "2a"), "people-v1:mfa")
+        self.assertIsNone(il.resolve_slot(emap, "technology-v1", "6b"))
+
+    def run_review(self, decide):
+        tmp = tempfile.mkdtemp()
+        args = session_args(tmp, [DOC], R3, crosswalk=self.CW_R3)
+        sess = im.open_session(args)
+        srv, url, review = ir.start(sess, lambda s: im.seal_session(s, args))
+        base = url.split("?")[0].rstrip("/")
+        try:
+            for form in decide:
+                form = dict(form, t=review.token)
+                self.assertEqual(web(base + "/decide", form)[0], 200, form)
+            self.assertEqual(web(base + "/seal", {"t": review.token, "reviewer": "Jordan Doe"})[0], 200)
+        finally:
+            srv.shutdown()
+        return args.out_dir, json.load(open(os.path.join(args.out_dir, "package.json")))
+
+    def test_confirmed_mappings_reach_the_scorer_as_stated_cap_1(self):
+        out, pkg = self.run_review([
+            {"clause": "03.05.03", "action": "confirm"},
+            {"clause": "03.06.01", "action": "edit", "doc": "0",
+             "span": "Logging is enabled across systems to support detection and investigation of incidents."},
+        ])
+        slots = [it["subcriterion"] for it in pkg["items"]]
+        self.assertIn("people-v1:mfa", slots)
+        mfa = [it for it in pkg["items"] if it["subcriterion"] == "people-v1:mfa"][0]
+        self.assertEqual(mfa["epistemic"], "subject_claim")
+        self.assertTrue(mfa["observation"]["stated"]["human_confirmed"])
+        self.assertEqual(mfa["observation"]["stated"]["clauses"][0]["confirmed_by"], "Jordan Doe")
+        self.assertEqual(mfa["observation"]["stated"]["framework"]["catalog_sha256"], file_sha(R3))
+        self.assertEqual(mfa["observation"]["stated"]["crosswalk"]["sha256"], file_sha(self.CW_R3))
+        self.assertEqual(mfa["mapping"]["status"], "mapped")
+        unm = [it for it in pkg["items"] if it["subcriterion"] == "unmapped" and "stated" in it["observation"]]
+        self.assertEqual(len(unm), 1, "incident handling routes to technology-v1/6b, which has no slot")
+        self.assertEqual(unm[0]["mapping"]["candidate_rubric_keys"], ["technology-v1:6b"])
+        # 03.04.10 etc. were proposed but not confirmed: they must not reach a slot
+        self.assertNotIn("technology-v1:1.1a", slots)
+
+        import subprocess
+        import sys
+        r = subprocess.run([sys.executable, os.path.join(HERE, "score.py"), os.path.join(out, "package.json"),
+                            "--json", os.path.join(out, "score.json")], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        res = json.load(open(os.path.join(out, "score.json")))
+        sub = [s for d in res["rubrics"]["people-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]
+        self.assertEqual(sub["level"], 1)
+        self.assertEqual(sub["evidence"]["class"], "stated")
+        self.assertEqual(sub["evidence"]["cap"], 1)
+        self.assertEqual(list(res["rubrics"]), ["people-v1"], "only the confirmed, slotted clause scores")
+        self.assertTrue(any("technology-v1:6b" in json.dumps(g) or g["slot"] == "unmapped" for g in res["gaps"]))
+
+    def test_nothing_confirmed_nothing_routed(self):
+        out, pkg = self.run_review([])
+        self.assertFalse([it for it in pkg["items"] if "stated" in it["observation"]])
+
+
 class Catalogs(unittest.TestCase):
     def test_simple_format_still_loads(self):
         fw = il.load_framework(open(FW, "rb").read(), FW)

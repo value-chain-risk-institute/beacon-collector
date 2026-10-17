@@ -679,3 +679,48 @@ def propose(fw, docs, backend, floor=0.2, k=3):
             row["excerpt"] = excerpt_record(docs, d, ch)
         rows.append(row)
     return rows
+
+
+# ---------------------------------------------------------------- crosswalk
+#
+# Optional. Maps framework clause ids to VCRI rubric subcriterion keys, so a CONFIRMED
+# mapping can be emitted on that subcriterion's evidence-map slot as stated evidence.
+# The crosswalk is methodology (VCRI's to ratify); this code only reads it.
+
+CROSSWALK_SCHEMA = "vcri.beacon.crosswalk/v0"
+
+
+def load_crosswalk(path, fw):
+    try:
+        raw = open(path, "rb").read()
+        cw = json.loads(raw)
+    except (OSError, ValueError) as e:
+        raise CatalogError("crosswalk %s unreadable: %s" % (path, e))
+    if cw.get("_schema") != CROSSWALK_SCHEMA:
+        raise CatalogError("crosswalk %s: _schema must be %s" % (path, CROSSWALK_SCHEMA))
+    ids = (cw.get("framework") or {}).get("ids") or []
+    if fw["id"] not in ids:
+        raise CatalogError("crosswalk %s is for %s, not %s" % (path, ", ".join(ids) or "no framework", fw["id"]))
+    known = {c["id"] for c in fw["clauses"]}
+    entries, unknown = {}, []
+    for e in cw.get("entries", []):
+        cid = str(e.get("clause_id"))
+        if cid not in known:
+            unknown.append(cid)
+            continue
+        tg = [t for t in e.get("targets", []) if isinstance(t, dict) and t.get("rubric") and t.get("key")]
+        if not tg:
+            raise CatalogError("crosswalk %s: entry %s has no {rubric, key} target" % (path, cid))
+        entries[cid] = {"targets": tg, "rationale": e.get("rationale")}
+    if unknown:
+        raise CatalogError("crosswalk %s names clauses not in %s %s: %s" % (
+            path, fw["id"], fw.get("version") or "", ", ".join(unknown)))
+    return {"id": cw.get("id"), "version": cw.get("version"), "status": cw.get("status", "unstated"),
+            "sha256": sha256(raw), "entries": entries}
+
+
+def resolve_slot(emap, rubric, key):
+    """The evidence-map slot whose home is rubric/key, or None (a reported gap)."""
+    hits = sorted(s for s, spec in emap.get("slots", {}).items()
+                  if spec.get("rubric") == rubric and spec.get("key") == key)
+    return hits[0] if hits else None
