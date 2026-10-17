@@ -302,5 +302,7 @@
       ]
     ],
     "note": "PROVISIONAL (2026-09-30). Third-party 0-10 check scores (e.g. OpenSSF Scorecard): mean of conclusive checks on the slot; >=8 earns the full attested level, >=4 earns one level less, below 4 earns nothing; any check at 0 earns nothing. Cut points to be revisited against Scorecard's public score distribution and pilot data; see ADAPTER-ROADMAP.md."
-  }
+  },
+  "stated_present_level": 1,
+  "stated_present_note": "DRAFT 2026-10-16 (document ingester v0.2). A policy excerpt that a named reviewer confirmed against a framework clause, routed to a subcriterion by a crosswalk, is the subject's own declaration: stated class, cap 1. Unconfirmed proposals score nothing. Which clauses route to which subcriteria is the crosswalk's methodology decision (crosswalks/, DRAFT), not this map's."
 }

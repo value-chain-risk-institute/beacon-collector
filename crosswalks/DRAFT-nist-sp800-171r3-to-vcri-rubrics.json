@@ -1,0 +1,23 @@
+{
+  "_schema": "vcri.beacon.crosswalk/v0",
+  "_status": "DRAFT, methodology PROPOSAL for VCRI to ratify (Cairn Viktor, 2026-10-16). NOT ratified. A handful of illustrative entries over the vendored Rev 3 catalog so the path can be tested offline; it is not a crosswalk of SP 800-171. VCRI's change log decides.",
+  "id": "nist-sp800-171r3-to-vcri-rubrics",
+  "version": "0.0.1-draft",
+  "status": "draft-unratified",
+  "framework": {"ids": ["nist-sp800-171r3"]},
+  "evidence_class": "stated",
+  "entries": [
+    {"clause_id": "03.05.03", "targets": [{"rubric": "people-v1", "key": "2a"}],
+     "rationale": "Multi-Factor Authentication -> authentication strength"},
+    {"clause_id": "03.04.10", "targets": [{"rubric": "technology-v1", "key": "1a"}],
+     "rationale": "System Component Inventory -> asset inventory"},
+    {"clause_id": "03.11.02", "targets": [{"rubric": "technology-v1", "key": "4a"}],
+     "rationale": "Vulnerability Monitoring and Scanning -> vulnerability and patch management"},
+    {"clause_id": "03.03.01", "targets": [{"rubric": "technology-v1", "key": "6a"}],
+     "rationale": "Event Logging -> security monitoring coverage (arguable; see the CIS 8.2 note)"},
+    {"clause_id": "03.02.01", "targets": [{"rubric": "people-v1", "key": "4b"}],
+     "rationale": "Literacy Training and Awareness -> security awareness training"},
+    {"clause_id": "03.06.01", "targets": [{"rubric": "technology-v1", "key": "6b"}],
+     "rationale": "Incident Handling -> incident detection and response; NO evidence-map slot yet, so this demonstrates the gap path"}
+  ]
+}

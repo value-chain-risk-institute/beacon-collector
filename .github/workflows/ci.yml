@@ -43,6 +43,8 @@ jobs:
         run: python test_scheduled.py
       - name: adapter suite (SBOM, Scorecard, outside-in, CSV exports, OSCAL; offline fixtures, forgeries refused)
         run: python test_adapters.py
+      - name: document ingester suite (OSCAL catalogs, .md/.txt/.docx, BM25, confirm page over 127.0.0.1, crosswalk to scorer; pypdf absent, so the .pdf path checks its refusal)
+        run: python test_ingest.py
       - name: end-to-end seal on a sample export, unsigned, no network anchoring
         run: |
           printf '[{"user":"a@x","mfa_enabled":true,"status":"active"},{"user":"b@x","mfa_enabled":false,"status":"active","privileged":true}]' > /tmp/users.json

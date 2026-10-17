@@ -86,6 +86,23 @@ def main():
     lvl = [s for d in out["rubrics"]["technology-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]["level"]
     check("a subject's own claim caps at 1", lvl == 1)
 
+    print("stated policy pointers from the document ingester (2026-10-16)")
+    stated = {"stated": {"present": True, "kind": "policy-excerpt", "human_confirmed": True}}
+    pkg = build([item("people-v1:mfa", "subject_claim", stated, mode="document-mapping")])
+    out = sc.score_package(pkg, rubrics, emap)
+    sub = [s for d in out["rubrics"]["people-v1"]["dimensions"] for s in d["subcriteria"] if s["key"] == "2a"][0]
+    check("a human-confirmed policy excerpt scores stated level 1 on a ladder-ruled slot",
+          sub["level"] == 1 and sub["evidence"]["class"] == "stated" and sub["evidence"]["cap"] == 1)
+    unconf = {"stated": {"present": True, "kind": "policy-excerpt", "human_confirmed": False}}
+    pkg = build([item("people-v1:mfa", "subject_claim", unconf, mode="document-mapping")])
+    check("an unconfirmed proposal earns nothing", not sc.score_package(pkg, rubrics, emap)["rubrics"])
+    pkg = build([item("people-v1:mfa", "subject_claim", stated, mode="document-mapping"),
+                 item("people-v1:mfa", "observed_export", {"mfa": {"coverage_fraction": 0.95}})])
+    sub = [s for d in sc.score_package(pkg, rubrics, emap)["rubrics"]["people-v1"]["dimensions"]
+           for s in d["subcriteria"] if s["key"] == "2a"][0]
+    check("observed evidence beats the policy statement on the same subcriterion", sub["evidence"]["class"] == "observed")
+    check("stated_present level is data in the evidence map", emap.get("stated_present_level") == 1)
+
     print("observed beats attested, contradiction reported")
     # people-v1:mfa has a ladder rule (needs a fraction), so build the contradiction on
     # technology-v1:1.1b where the scanner observes zero checks and a document attests.

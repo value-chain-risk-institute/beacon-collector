@@ -47,6 +47,8 @@ beacon_collector = [
     "samples/*.json",
     "samples/adapters/*",
     "deploy/*",
+    "catalogs/*",
+    "crosswalks/*",
 ]
 
 [tool.setuptools.exclude-package-data]

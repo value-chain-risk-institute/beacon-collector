@@ -13,6 +13,7 @@ test: compile
 	$(PY) test_score.py
 	$(PY) test_scheduled.py
 	$(PY) test_adapters.py
+	$(PY) test_ingest.py
 
 build:
 	docker build -t beacon-collector:dogfood .

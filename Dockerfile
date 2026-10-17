@@ -42,6 +42,9 @@ COPY hooks /app/hooks
 COPY samples /app/samples
 COPY deploy /app/deploy
 COPY scorer-evidence-map-v0.json pyproject.toml README.md LICENSE /app/
+# document ingester: catalog index + vendored NIST catalogs, DRAFT crosswalks
+COPY catalogs /app/catalogs
+COPY crosswalks /app/crosswalks
 COPY dogfood.sh /app/dogfood.sh
 RUN chmod +x /app/dogfood.sh
 # Install the same package pip users get, so `beacon <command>` is identical in and
