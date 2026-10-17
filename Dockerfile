@@ -33,6 +33,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY *.py /app/
 # TSA trust chain, so `anchor.py verify` works offline inside the image.
 COPY anchor-trust /app/anchor-trust
+# document ingester: catalog index + vendored NIST catalogs, DRAFT crosswalks
+COPY catalogs /app/catalogs
+COPY crosswalks /app/crosswalks
 COPY dogfood.sh /app/dogfood.sh
 RUN chmod +x /app/dogfood.sh
 

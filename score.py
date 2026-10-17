@@ -163,7 +163,13 @@ def score_package(pkg, rubrics, emap):
         slot = item.get("subcriterion")
         spec = emap["slots"].get(slot)
         if spec is None:
-            gaps.append({"slot": slot, "reason": "slot not in the evidence map"})
+            gap = {"slot": slot, "reason": "slot not in the evidence map"}
+            m = item.get("mapping") or {}
+            if m.get("status") == "unmapped" and m.get("reason"):
+                # say WHICH evidence has no home, so four "unmapped" lines are four facts
+                gap["reason"] += " (%s%s)" % (m["reason"], "; candidates: " + ", ".join(m["candidate_rubric_keys"][:5])
+                                              if m.get("candidate_rubric_keys") else "")
+            gaps.append(gap)
             continue
         if spec.get("rubric") is None:
             gaps.append({"slot": slot, "reason": spec.get("gap", "no rubric home")})
