@@ -25,6 +25,7 @@ import unittest
 import beaconlib as bl
 import ingestlib as il
 import ingestmode as im
+import ingestreview as ir
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOC = os.path.join(HERE, "samples", "sample-infosec-policy.md")
@@ -382,6 +383,138 @@ class Matching(unittest.TestCase):
         self.assertEqual(props["03.13.11"]["excerpt"]["doc"], 1)
         self.assertEqual(props["03.13.11"]["excerpt"]["location"]["section"], "Cryptography")
         self.assertEqual(props["03.05.03"]["excerpt"]["doc"], 0)
+
+
+def web(url, form=None, host=None):
+    """(status, body) for a GET, or a POST when form is given; 303s are followed."""
+    import http.client
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    if host:
+        u = urllib.parse.urlsplit(url)
+        c = http.client.HTTPConnection(u.hostname, u.port, timeout=10)
+        c.putrequest("GET", u.path + "?" + u.query, skip_host=True)
+        c.putheader("Host", host)
+        c.endheaders()
+        r = c.getresponse()
+        try:
+            return r.status, r.read().decode()
+        finally:
+            c.close()
+    data = urllib.parse.urlencode(form).encode() if form is not None else None
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=10) as r:
+            return r.status, r.read().decode()
+    except urllib.error.HTTPError as e:
+        with e:
+            return e.code, e.read().decode()
+
+
+def session_args(tmp, docs, framework, crosswalk=None, floor=0.2):
+    return argparse.Namespace(doc=docs, framework=framework, framework_sha256=None, floor=floor, matcher="bm25",
+                              crosswalk=crosswalk, subject="TestCo", box=None, sign=False, no_anchor=True,
+                              home=os.path.join(tmp, ".beacon"), out_dir=os.path.join(tmp, "out"))
+
+
+class ConfirmPage(unittest.TestCase):
+    """Drives the confirm page over real HTTP on 127.0.0.1, as a reviewer's browser would."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.hostile = os.path.join(self.tmp, "hostile.md")
+        open(self.hostile, "w").write(
+            "## Remote access\n\nAll remote access requires multi-factor authentication "
+            "<script>alert('x')</script> for every account.\n\n"
+            "## Logs\n\nAudit logs are collected from every server and retained for one year.\n")
+        self.args = session_args(self.tmp, [DOC, self.hostile], FW)
+        self.sess = im.open_session(self.args)
+        self.srv, self.url, self.review = ir.start(self.sess, lambda s: im.seal_session(s, self.args))
+        self.base = self.url.split("?")[0]
+        self.t = self.review.token
+
+    def tearDown(self):
+        self.srv.shutdown()
+
+    def post(self, path, **form):
+        form.setdefault("t", self.t)
+        return web(self.base.rstrip("/") + path, form)
+
+    def test_bound_to_loopback_with_random_port(self):
+        self.assertEqual(self.srv.server_address[0], "127.0.0.1")
+        self.assertNotEqual(self.srv.server_address[1], 0)
+        self.assertGreaterEqual(len(self.t), 40)
+
+    def test_token_gates_every_request(self):
+        self.assertEqual(web(self.base)[0], 403)
+        self.assertEqual(web(self.base + "?t=wrong")[0], 403)
+        self.assertEqual(web(self.base.rstrip("/") + "/decide", {"t": "wrong", "clause": "6.3", "action": "confirm"})[0], 403)
+        self.assertNotIn("6.3", self.sess["decisions"])
+        self.assertEqual(web(self.url)[0], 200)
+
+    def test_foreign_host_header_refused(self):
+        self.assertEqual(web(self.url, host="evil.example:%d" % self.srv.server_address[1])[0], 403)
+
+    def test_document_text_is_escaped(self):
+        status, body = web(self.url)
+        self.assertEqual(status, 200)
+        self.assertNotIn("<script>alert", body)
+        self.assertIn("&lt;script&gt;alert(&#x27;x&#x27;)&lt;/script&gt;", body)
+
+    def test_full_review_flow_seals_only_what_was_confirmed(self):
+        # confirm 6.3, edit 8.2 down to one sentence, mark 11.2 not covered, supply 7.1 by hand,
+        # leave 1.1 untouched
+        self.assertEqual(self.post("/decide", clause="6.3", action="confirm")[0], 200)
+        span = "Audit logs are collected from servers and critical applications and retained for at least one year."
+        self.assertEqual(self.post("/decide", clause="8.2", action="edit", doc="0", span=span)[0], 200)
+        self.assertEqual(self.post("/decide", clause="11.2", action="not_covered")[0], 200)
+        self.assertEqual(self.post("/decide", clause="7.1", action="edit", doc="0",
+                                   span="The IT team reviews and updates the asset inventory every quarter.")[0], 200)
+        # a paraphrase is refused server-side and changes nothing
+        status, body = self.post("/decide", clause="1.1", action="edit", doc="0",
+                                 span="The company keeps an inventory of every asset.")
+        self.assertEqual(status, 400)
+        self.assertIn("not a verbatim substring", body)
+        self.assertNotIn("1.1", self.sess["decisions"])
+        # sealing needs a reviewer name
+        self.assertEqual(self.post("/seal", reviewer="   ")[0], 400)
+        status, body = self.post("/seal", reviewer="Jordan Doe")
+        self.assertEqual(status, 200)
+        self.assertIn("package_hash", body)
+        # the token is spent
+        self.assertEqual(web(self.url)[0], 410)
+        self.assertEqual(self.post("/decide", clause="1.1", action="confirm")[0], 410)
+
+        out = self.args.out_dir
+        pkg = json.load(open(os.path.join(out, "package.json")))
+        self.assertTrue(bl.verify_package(pkg, blob_dir=os.path.join(out, "blobs"), registry=None))
+        maps = {m["clause_id"]: m for it in pkg["items"] if "document_mapping" in it["observation"]
+                for m in it["observation"]["document_mapping"]["mappings"]}
+        self.assertTrue(maps["6.3"]["human"]["confirmed"])
+        self.assertEqual(maps["6.3"]["human"]["by"], "Jordan Doe")
+        self.assertTrue(maps["6.3"]["human"]["at"])
+        self.assertEqual(maps["8.2"]["excerpt"]["text"], span)
+        self.assertEqual(maps["8.2"]["human"]["decision"], "edited")
+        self.assertIn("proposed_excerpt", maps["8.2"])
+        self.assertEqual(maps["7.1"]["excerpt"]["location"]["section"], "Asset management")
+        self.assertTrue(maps["7.1"]["human"]["confirmed"])
+        self.assertFalse(maps["1.1"]["human"]["confirmed"], "untouched proposals stay unconfirmed")
+        self.assertIsNone(maps["1.1"]["human"]["by"])
+        self.assertNotIn("11.2", maps)
+        summary = [it for it in pkg["items"] if "document_mapping_summary" in it["observation"]][0]
+        gaps = {g["clause_id"]: g for g in summary["observation"]["document_mapping_summary"]["gaps"]}
+        self.assertEqual(gaps["11.2"]["reason"], "reviewer_marked_not_covered")
+        self.assertEqual(gaps["11.2"]["by"], "Jordan Doe")
+        for m in maps.values():
+            src = [d for d in self.sess["docs"] if d["sha256"] == m["source_doc"]["sha256"]][0]
+            self.assertIn(m["excerpt"]["text"], src["text"], "every sealed excerpt is verbatim")
+
+    def test_seal_with_no_decisions_is_all_unconfirmed(self):
+        self.assertEqual(self.post("/seal", reviewer="Jordan Doe")[0], 200)
+        pkg = json.load(open(os.path.join(self.args.out_dir, "package.json")))
+        for it in pkg["items"]:
+            for m in it["observation"].get("document_mapping", {}).get("mappings", []):
+                self.assertFalse(m["human"]["confirmed"])
 
 
 class Catalogs(unittest.TestCase):
