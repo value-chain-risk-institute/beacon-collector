@@ -44,3 +44,11 @@ publisher updates a file, and add a dated line here.
 
 - NIST SP 800-171 Revision 2: not in usnistgov/oscal-content (only Rev 3 is), and the CSRC publication page for Rev 2 links no OSCAL or CPRT export. Not fabricated here. If a Rev 2 mapping is needed (CMMC 2.0 Level 2 still cites Rev 2), it would have to be authored by VCRI as an OSCAL catalog and labeled as VCRI-authored.
 - HIPAA / HHS HICP and the EU CRA: no official OSCAL; per the 2026-10-09 decisions VCRI authors those. Not started in this branch.
+
+## NIST SP 800-171 Revision 2 (added 2026-10-16, Joshua's decision)
+
+- File: `nist-sp800-171r2.json` (simple clause format, 110 requirements), pinned by sha256 in `index.json`.
+- Built from NIST's own published list: the CSRC spreadsheet `sp800-171r2-security-reqs.csv`, downloaded 2026-09-22, kept verbatim with its sha256 in `../overlays/nist-sp800-171r2-security-reqs.source.csv` (sha256 0f4d59413bbcc9998da80495ce46ebfe0475e392803c4d2ed38d9941d83f138d).
+- Requirement text is NIST's, word for word. Titles are the requirement id, family, and basic/derived kind from the same spreadsheet.
+- This is a VCRI conversion, NOT an official NIST OSCAL catalog (NIST publishes none for Rev 2). It is here because CMMC 2.0 Level 2 still cites Rev 2.
+- License: NIST publications are works of the US Government.

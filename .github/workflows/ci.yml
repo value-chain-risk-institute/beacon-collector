@@ -84,7 +84,7 @@ jobs:
           docker run --rm beacon-collector:ci version
           docker run --rm beacon-collector:ci verify /app/samples/sample-171-package.json
           docker run --rm --entrypoint sh beacon-collector:ci -c "cd /tmp && beacon results /app/samples/sample-171-package.json --out /tmp/r.html && grep -q 'Package verified' /tmp/r.html"
-      - name: image name (GHCR requires lowercase; the org is Cairn-works)
+      - name: image name (GHCR requires lowercase)
         if: startsWith(github.ref, 'refs/tags/v')
         id: img
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"

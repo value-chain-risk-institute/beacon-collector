@@ -18,7 +18,7 @@ Both give you the same `beacon` command.
 As code (Python 3.10 or later):
 
 ```bash
-pip install git+https://github.com/Cairn-works/beacon-collector   # or: pip install . from a checkout
+pip install git+https://github.com/value-chain-risk-institute/beacon-collector@v0.8.0   # or: pip install . from a checkout
 beacon commands                         # every command, one line each
 beacon sbom collect --sbom bom.json     # seal some evidence
 beacon verify out-sbom/package.json     # check the seal
@@ -28,7 +28,7 @@ beacon results out-sbom/package.json    # one-page HTML results: score, evidence
 As a container:
 
 ```bash
-docker run --rm -v "$PWD:/work" -w /work ghcr.io/cairn-works/beacon-collector results package.json
+docker run --rm -v "$PWD:/work" -w /work ghcr.io/value-chain-risk-institute/beacon-collector:v0.8.0 results package.json
 ```
 
 `docker run IMAGE <command> [args]` is `beacon <command> [args]`. With no command, the image
@@ -71,7 +71,7 @@ runs in the wild), not the telemetry from a conference box.
 ## Quick start for an organization (not the dogfood)
 
 ```bash
-git clone https://github.com/Cairn-works/beacon-collector && cd beacon-collector
+git clone https://github.com/value-chain-risk-institute/beacon-collector && cd beacon-collector
 python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 make test                                   # the tamper suites must pass on your box
 
