@@ -45,8 +45,21 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import beaconlib as bl
 from beaconlib import canonical, sha256, utcnow, completeness
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "sources"))
+import actionlib  # noqa: E402
+import claude_transcripts  # noqa: E402
+import clients as client_sources  # noqa: E402
+import pairing  # noqa: E402
+import spool as action_spool  # noqa: E402
 
-VERSION = "0.1.0"
+VERSION = "0.3.0-dev"
+# Transcript capture is OFF unless an operator names a root. On a household box the
+# default root (~/.claude/projects) holds the sessions of persons, not tools, and
+# nothing about a person's actions is collected on defaults (spec 3.6; Joshua
+# 2026-10-12: "leave it off you for now"). Name a root that holds only tool
+# sessions, for example a pilot org's coding-agent account.
+TRANSCRIPT_ROOT = os.environ.get("BEACON_TRANSCRIPT_ROOT") or None
+OLLAMA_URL = os.environ.get("BEACON_OLLAMA_URL", "http://127.0.0.1:11434")
 HEARTBEAT_SECONDS = 6 * 3600
 DEFAULT_STATE = "~/.beacon/agent"
 DEFAULT_HOME = "~/.beacon"
@@ -146,10 +159,17 @@ def obs_a1_model_identity(fx):
 
 
 def obs_a2_response_fingerprints(fx):
-    return {"fingerprint_sampling": {"present": False,
-            "note": "no response-metadata middleware tap deployed in this household; "
-                    "absence recorded as absence (Annex element 2 confidence MEDIUM, "
-                    "field availability varies by provider)"}}
+    acts = fx.get("actions") or {}
+    turns = claude_transcripts.served_models(acts.get("records", []))
+    out = {"fingerprint_sampling": {
+               "present": bool(turns), "source": "claude-code-transcript:message.model",
+               "served_by_requested": turns,
+               "grade": "provider-attested label recorded by the harness; it names the model "
+                        "that produced each message, including after a fallback. It cannot "
+                        "show different weights served under the same name.",
+               "note": "turns sealed in THIS package only (new since the previous seal)"},
+           "local_runtime_digest": fx.get("ollama") or {"present": False}}
+    return out
 
 
 def obs_a3_model_parameters(fx):
@@ -254,7 +274,10 @@ def obs_c7_mcp_inventory(fx):
     return {"mcp_servers": {"present": bool(inv), "count": len(inv), "servers": inv,
                             "config_sha256": file_sha(H("~/.claude/.mcp.json"))},
             "upstream_provenance": {"present": False,
-                                    "note": "registry signature ecosystems immature (Annex element 7 MEDIUM); local hashes only"}}
+                                    "note": "registry signature ecosystems immature (Annex element 7 MEDIUM); local hashes only"},
+            "clients": {"present": True, "list": client_sources.mcp_clients(),
+                        "note": "every known agent client's MCP config; env values and URL "
+                                "paths never recorded; stdio servers never executed"}}
 
 
 def obs_c8_permission_surface(fx):
@@ -486,6 +509,133 @@ def obs_g17_eval_results(fx):
                           "searched": candidates, "dirs_present": found}}
 
 
+# ---------------- H layer: agent actions (v0.3) ----------------
+# H18 is claim side (the agent's and harness's own records, typed as testimony).
+# H19 to H21 are the other two sides; until a source is configured they say so.
+# H22 is DERIVED from what is sealed above it and can be recomputed by a verifier.
+
+def gather_actions(paths, state):
+    """Read both claim sources since their sealed cursors. Nothing is committed to
+    state here; the caller saves the returned cursors only after the seal lands."""
+    key = actionlib.load_key(paths["dir"])
+    hook_records, spool_cursors, spool_findings, spool_stats = action_spool.read(
+        paths["dir"], state.get("spool_cursors", {}))
+    if TRANSCRIPT_ROOT:
+        tx_records, tx_cursors, tx_findings, tx_stats = claude_transcripts.read(
+            state.get("transcript_cursors"), key, root=TRANSCRIPT_ROOT)
+    else:
+        tx_records, tx_cursors, tx_findings = [], state.get("transcript_cursors"), []
+        tx_stats = {"files": 0, "enabled": False}
+    return {"records": hook_records + tx_records,
+            "hook": {"records": len(hook_records), "findings": spool_findings,
+                     "stats": spool_stats, "failures": action_spool.failures(paths["dir"]),
+                     "installed": hook_installed()},
+            "transcript": {"records": len(tx_records), "findings": tx_findings,
+                           "stats": tx_stats, "root": TRANSCRIPT_ROOT},
+            "key_id": actionlib.key_id(key),
+            "cursors": {"spool_cursors": spool_cursors, "transcript_cursors": tx_cursors}}
+
+
+def hook_installed():
+    """Is beacon_action_hook registered in the live harness settings? A fact read
+    from config, so a removed hook shows here and in the watched hooks surface."""
+    settings = load_json("~/.claude/settings.json") or {}
+    blob = json.dumps(settings.get("hooks", {}))
+    return "beacon_action_hook" in blob
+
+
+def actions_pending(paths, state):
+    """Cheap pre-check for tick(): has any claim source grown since its cursor?"""
+    spool_dir = os.path.join(paths["dir"], "actions", "spool")
+    cur = state.get("spool_cursors", {})
+    for f in glob.glob(os.path.join(spool_dir, "*.jsonl")):
+        name = os.path.basename(f)
+        try:
+            with open(f, "rb") as fh:
+                n = sum(1 for line in fh if line.strip())
+        except OSError:
+            continue
+        if n != cur.get(name, {}).get("lines", 0):
+            return True
+    if not TRANSCRIPT_ROOT:
+        return False
+    tx = state.get("transcript_cursors")
+    if tx is None:
+        return True
+    root = H(TRANSCRIPT_ROOT)
+    for f in glob.glob(os.path.join(root, "**", "*.jsonl"), recursive=True):
+        c = tx.get(os.path.relpath(f, root))
+        try:
+            st = os.stat(f)
+        except OSError:
+            continue
+        if not c or c.get("size") != st.st_size or c.get("mtime") != st.st_mtime:
+            return True
+    return len(tx) != len(glob.glob(os.path.join(root, "**", "*.jsonl"), recursive=True))
+
+
+def obs_h18_action_ledger(fx):
+    a = fx.get("actions")
+    if a is None:
+        return {"claim_sources": {"present": False, "note": "action collection disabled"}}
+    by_event = {}
+    for r in a["records"]:
+        k = "%s:%s" % (r.get("source"), r.get("event"))
+        by_event[k] = by_event.get(k, 0) + 1
+    return {"claim_sources": {
+                "present": True, "epistemic_class": "agent_testimony",
+                "records": len(a["records"]), "by_source_event": by_event,
+                "commitment": "c1: sha256(per-item nonce || value), nonces derived from a per-deployment key; identifiers as keyed pseudonyms", "key_id": a["key_id"],
+                "segment": "blob referenced by artifact_ref (records sealed in this package)"},
+            "hook": {"present": a["hook"]["installed"] or a["hook"]["records"] > 0,
+                     "installed_in_settings": a["hook"]["installed"],
+                     "records": a["hook"]["records"], "findings": a["hook"]["findings"],
+                     "stats": a["hook"]["stats"], "failures": a["hook"]["failures"]},
+            "transcript": {"present": a["transcript"]["stats"]["files"] > 0,
+                           "enabled": bool(TRANSCRIPT_ROOT),
+                           "boundary": None if TRANSCRIPT_ROOT else
+                               "not enabled: no transcript root named by the operator; "
+                               "household person sessions are never read on defaults",
+                           "records": a["transcript"]["records"],
+                           "findings": a["transcript"]["findings"],
+                           "stats": a["transcript"]["stats"],
+                           "coverage_note": "a file whose size and mtime match its sealed "
+                                            "cursor is not re-hashed; mtime is forgeable by "
+                                            "the same user, so an edit that restores both is "
+                                            "caught only when the file next grows"}}
+
+
+def obs_h19_vendor_record(fx):
+    return {"vendor_activity": {"present": False,
+            "note": "no vendor compliance or audit API configured (Anthropic Compliance API "
+                    "needs a Claude Enterprise org; OpenAI, GitHub, Cursor pulls are v0.4)"}}
+
+
+def obs_h20_os_observed(fx):
+    return {"os_observation": {"present": False,
+            "note": "no OS-level observer running (eslogger needs root on macOS; auditd or "
+                    "fanotify on Linux). Without it, absence of an effect is 'not observed', "
+                    "never 'did not happen'."}}
+
+
+def obs_h21_cloud_credentials(fx):
+    return {"cloud_control_plane": {"present": False,
+            "note": "no cloud audit source configured (CloudTrail, Azure Activity and Entra "
+                    "sign-ins, GCP audit logs are v0.4, pulled for the agent's own identity)"}}
+
+
+def obs_h22_pairing(fx):
+    a = fx.get("actions") or {"records": [], "hook": {"installed": False, "records": 0}}
+    hook_present = a["hook"]["installed"] or a["hook"]["records"] > 0
+    return pairing.pair(a["records"], hook_present)
+
+
+# Evidence class for the action items, stated on the item so report.py grades them
+# honestly. H18 is the agent's and harness's own account; H22 is derived from it.
+# The config-watch items (A1 to G17) are left unlabelled pending Joshua's
+# methodology call on whether machine-read config counts as observed.
+ACTION_EPISTEMIC = {"agent-v0:H18": "subject_claim", "agent-v0:H22": "subject_claim"}
+
 ELEMENTS = [
     ("agent-v0:A1",  "model",         "model-identity-per-endpoint", obs_a1_model_identity, ["endpoints", "local_inference"]),
     ("agent-v0:A2",  "model",         "response-version-fingerprints", obs_a2_response_fingerprints, ["fingerprint_sampling"]),
@@ -504,6 +654,11 @@ ELEMENTS = [
     ("agent-v0:F15", "change-time",   "seal-cadence-records", obs_f15_seal_cadence, ["seal_history", "cadence_policy"]),
     ("agent-v0:G16", "observability", "log-existence-retention-integrity", obs_g16_log_surface, ["log_inventory", "rotation"]),
     ("agent-v0:G17", "observability", "eval-results", obs_g17_eval_results, ["eval_runs"]),
+    ("agent-v0:H18", "actions",       "agent-action-ledger", obs_h18_action_ledger, ["claim_sources", "hook", "transcript"]),
+    ("agent-v0:H19", "actions",       "vendor-activity-record", obs_h19_vendor_record, ["vendor_activity"]),
+    ("agent-v0:H20", "actions",       "os-observed-effects", obs_h20_os_observed, ["os_observation"]),
+    ("agent-v0:H21", "actions",       "cloud-credential-activity", obs_h21_cloud_credentials, ["cloud_control_plane"]),
+    ("agent-v0:H22", "actions",       "action-pairing-delta", obs_h22_pairing, ["pairing"]),
 ]
 
 
@@ -546,10 +701,19 @@ def can_sign(home):
     return False
 
 
-def collect_and_seal(reason, changed, paths, home, prev_hash, sequence):
+def collect_and_seal(reason, changed, paths, home, prev_hash, sequence, state=None):
     now = utcnow()
     surfaces = surface_digest()
     fx = {"surfaces": surfaces, "seal_log_path": paths["seal_log"]}
+    action_cursors = None
+    if os.environ.get("BEACON_ACTIONS", "on") != "off":
+        try:
+            fx["actions"] = gather_actions(paths, state or {})
+            action_cursors = fx["actions"]["cursors"]
+        except Exception as e:  # recorded in H18 as a failure, never silently dropped
+            fx["actions"] = None
+            fx["actions_error"] = type(e).__name__
+    fx["ollama"] = client_sources.ollama(OLLAMA_URL)
 
     observations = {}
     items = []
@@ -572,26 +736,46 @@ def collect_and_seal(reason, changed, paths, home, prev_hash, sequence):
     raw_hash = sha256(raw_bytes)
     with open(os.path.join(blob_dir, "sha256-" + raw_hash + ".json"), "wb") as f:
         f.write(raw_bytes)
+    # H18's records go in their own blob: the segment of actions sealed by this package.
+    slot_blob = {}
+    if fx.get("actions") is not None:
+        seg = canonical({"schema": actionlib.ACTION_SCHEMA + "/segment",
+                         "collected_utc": now, "records": fx["actions"]["records"]})
+        seg_hash = sha256(seg)
+        with open(os.path.join(blob_dir, "sha256-" + seg_hash + ".json"), "wb") as f:
+            f.write(seg)
+        slot_blob["agent-v0:H18"] = seg_hash
+        slot_blob["agent-v0:H22"] = seg_hash
+    elif fx.get("actions_error"):
+        observations["agent-v0:H18"] = {"collection_error": {
+            "present": False, "error": fx["actions_error"],
+            "note": "action collection failed this tick; cursors not advanced, so the "
+                    "next seal re-reads the same window"}}
 
     provenance = {"box": platform.node(), "access": "local-filesystem",
                   "collector_host": platform.node(), "deployment": "cairn-household"}
     for slot, layer, name, fn, expected in ELEMENTS:
         obs = observations[slot]
+        item_raw = slot_blob.get(slot, raw_hash)
         item = {
             "subcriterion": slot,
             "layer": layer,
             "element": name,
             "mode": "agent-continuous",
-            "source": {"tool": "beacon-agentmode", "kind": "config-watch", "raw_sha256": raw_hash},
+            "source": {"tool": "beacon-agentmode",
+                       "kind": "action-capture" if layer == "actions" else "config-watch",
+                       "raw_sha256": item_raw},
             "provenance": provenance,
             "observation": obs,
             "context": [],
             "completeness": completeness(obs, expected),
             "freshness": {"collected_utc": now, "evidence_age_seconds": 0,
                           "note": "live collection = age 0"},
-            "artifact_ref": "blob/sha256-" + raw_hash,
+            "artifact_ref": "blob/sha256-" + item_raw,
             "collected_utc": now,
         }
+        if slot in ACTION_EPISTEMIC:
+            item["epistemic"] = ACTION_EPISTEMIC[slot]
         item["item_sha256"] = sha256(canonical(item))
         items.append(item)
 
@@ -616,7 +800,7 @@ def collect_and_seal(reason, changed, paths, home, prev_hash, sequence):
     with open(paths["seal_log"], "a") as f:
         f.write(json.dumps(entry) + "\n")
 
-    return package, pkg_path, surfaces
+    return package, pkg_path, surfaces, action_cursors
 
 
 def _trim_own_logs(max_bytes=1_000_000, keep=100_000):
@@ -652,6 +836,8 @@ def tick(args):
         changed += sorted(set(prev_digests) - set(current_digests))
         if changed:
             reason = "change"
+        elif os.environ.get("BEACON_ACTIONS", "on") != "off" and actions_pending(paths, state):
+            reason = "actions"
         elif now_epoch - state.get("last_seal_epoch", 0) >= HEARTBEAT_SECONDS:
             reason, changed = "heartbeat", []
         else:
@@ -660,8 +846,10 @@ def tick(args):
             return
 
     sequence = state.get("sequence", 0) + 1
-    package, pkg_path, surfaces = collect_and_seal(
-        reason, changed, paths, args.home, state.get("last_package_hash"), sequence)
+    package, pkg_path, surfaces, action_cursors = collect_and_seal(
+        reason, changed, paths, args.home, state.get("last_package_hash"), sequence, state)
+    if action_cursors:
+        state.update(action_cursors)
 
     state.update({"surface_digests": {k: v["digest"] for k, v in surfaces.items()},
                   "sequence": sequence,
@@ -681,8 +869,10 @@ def cmd_collect(args):
     paths = state_paths(args.state)
     state = load_state(paths)
     sequence = state.get("sequence", 0) + 1
-    package, pkg_path, surfaces = collect_and_seal(
-        args.reason, [], paths, args.home, state.get("last_package_hash"), sequence)
+    package, pkg_path, surfaces, action_cursors = collect_and_seal(
+        args.reason, [], paths, args.home, state.get("last_package_hash"), sequence, state)
+    if action_cursors:
+        state.update(action_cursors)
     state.update({"surface_digests": {k: v["digest"] for k, v in surfaces.items()},
                   "sequence": sequence,
                   "last_package_hash": package["seal"]["package_hash"],

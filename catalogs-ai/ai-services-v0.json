@@ -1,0 +1,33 @@
+{
+  "catalog": "vcri.beacon.ai-services/0.1",
+  "updated": "2026-10-12",
+  "note": "Indicative, not exhaustive. A domain here means traffic to it is AI-service traffic; absence from the catalog means unknown, not 'not AI'. Suffix match: an entry matches the domain and any subdomain. Shared platforms (googleapis.com, microsoft.com, github.com) are listed only by their AI-specific hosts. Versioned like the overlays; additions are pull requests with a source.",
+  "services": [
+    {"service": "ChatGPT", "vendor": "OpenAI", "kind": "chat", "domains": ["chatgpt.com", "chat.openai.com"]},
+    {"service": "OpenAI API", "vendor": "OpenAI", "kind": "api", "domains": ["api.openai.com"]},
+    {"service": "Claude", "vendor": "Anthropic", "kind": "chat", "domains": ["claude.ai"]},
+    {"service": "Anthropic API", "vendor": "Anthropic", "kind": "api", "domains": ["api.anthropic.com"]},
+    {"service": "Gemini", "vendor": "Google", "kind": "chat", "domains": ["gemini.google.com", "bard.google.com"]},
+    {"service": "Gemini API", "vendor": "Google", "kind": "api", "domains": ["generativelanguage.googleapis.com"]},
+    {"service": "NotebookLM", "vendor": "Google", "kind": "chat", "domains": ["notebooklm.google.com"]},
+    {"service": "Microsoft Copilot", "vendor": "Microsoft", "kind": "chat", "domains": ["copilot.microsoft.com", "copilot.cloud.microsoft"]},
+    {"service": "GitHub Copilot", "vendor": "Microsoft", "kind": "coding", "domains": ["githubcopilot.com", "copilot-proxy.githubusercontent.com"]},
+    {"service": "Perplexity", "vendor": "Perplexity", "kind": "chat", "domains": ["perplexity.ai"]},
+    {"service": "Grok", "vendor": "xAI", "kind": "chat", "domains": ["grok.com"]},
+    {"service": "xAI API", "vendor": "xAI", "kind": "api", "domains": ["api.x.ai"]},
+    {"service": "DeepSeek", "vendor": "DeepSeek", "kind": "chat", "domains": ["chat.deepseek.com", "deepseek.com"]},
+    {"service": "Mistral Le Chat", "vendor": "Mistral", "kind": "chat", "domains": ["chat.mistral.ai"]},
+    {"service": "Mistral API", "vendor": "Mistral", "kind": "api", "domains": ["api.mistral.ai"]},
+    {"service": "Meta AI", "vendor": "Meta", "kind": "chat", "domains": ["meta.ai"]},
+    {"service": "Poe", "vendor": "Quora", "kind": "chat", "domains": ["poe.com"]},
+    {"service": "Character.AI", "vendor": "Character.AI", "kind": "chat", "domains": ["character.ai"]},
+    {"service": "Cursor", "vendor": "Anysphere", "kind": "coding", "domains": ["cursor.sh", "cursor.com"]},
+    {"service": "Windsurf", "vendor": "Cognition", "kind": "coding", "domains": ["codeium.com", "windsurf.com"]},
+    {"service": "Hugging Face", "vendor": "Hugging Face", "kind": "models", "domains": ["huggingface.co", "hf.co"]},
+    {"service": "OpenRouter", "vendor": "OpenRouter", "kind": "api", "domains": ["openrouter.ai"]},
+    {"service": "Groq", "vendor": "Groq", "kind": "api", "domains": ["groq.com"]},
+    {"service": "Together AI", "vendor": "Together", "kind": "api", "domains": ["together.ai", "together.xyz"]},
+    {"service": "Replicate", "vendor": "Replicate", "kind": "api", "domains": ["replicate.com"]},
+    {"service": "Midjourney", "vendor": "Midjourney", "kind": "image", "domains": ["midjourney.com"]}
+  ]
+}

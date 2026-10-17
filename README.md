@@ -114,7 +114,7 @@ the scorer only applies them.
 
 ## Security posture (why a public IP is fine)
 
-**The collector is outbound-only. It opens no listening ports.** `collect` shells out to Trivy
+**The collector is outbound-only. It opens no listening ports, except one loopback-only port (127.0.0.1) while the optional local UI (`ui.py`) is running.** `collect` shells out to Trivy
 and writes local files; `send` (when used) is org-initiated and outbound. So the collector is
 **not** the attack surface of a public-IP box.
 
@@ -157,3 +157,32 @@ Sample: `python3 samples/make_sample_171.py && python3 report.py samples/sample-
 "I think these lines answer this requirement." `point.py` seals exactly that sentence: a pointer from a named person to a line range and quoted span in a hashed document, keyed to a framework requirement (`nist-sp800-171r2:3.2.1`). It is Stated class: a claim, not an evaluation, and the natural precursor to a paid examination that confirms or refuses it. A model may suggest a pointer (`--model`); it is shown as suggested and never counted until a person re-points it (`--by`). Merge pointer packages into the main package with `merge.py`; the coverage report then shows `pointed` rows with the lines and the quote. Editing a quote after sealing fails verification.
 
 `point.py --doc policy.pdf --framework nist-sp800-171r2 --subject-json subject.json --by "Name, role" --claim "3.2.1|14-17|quoted span" --out-dir pointers`
+
+## Local UI (ui.py)
+
+`~/.beacon/venv/bin/python ui.py serve [--state ~/.beacon/agent] [--port 0] [--idle-minutes 30]`
+
+A loopback-only admin console over the evidence already sealed: Status (chain head, sequence, last seal, heartbeat due, signing, anchor counts, the max-gap blind window), Sources (every element of the newest package, absent ones shown, never hidden), Timeline (the `beacondiff` change ribbon for the last N packages), Packages (items with evidence class, completeness and freshness, plus Verify, which reports exactly one of verified, tampered or unproven), and Export (a `report.py` bundle written to a new directory under `~/.beacon/exports/`). It adds no measurement of its own and has no route that edits or deletes evidence. Standard library only.
+
+While it runs, the collector has one listening port, bound to 127.0.0.1. A non-loopback bind is refused unless `--allow-remote` is given; remote viewing is an SSH or Tailscale tunnel. The printed launch URL carries a per-launch token that is exchanged for an HttpOnly, SameSite=Strict cookie; requests with any other Host header are refused; export is POST only with a CSRF token and an Origin check; no CORS headers; CSP allows no script. Signing is reported without reading the keychain, so it can say unknown. The process exits after 30 idle minutes. Tests: `~/.beacon/venv/bin/python test_ui.py`.
+
+## Agent actions (v0.3, branch v0.3-actions)
+
+Agent mode now seals what the agent did, not only how it was configured. Five new items:
+
+- H18 agent-action-ledger: prompts, model turns, tool calls and results from two claim sources, the Claude Code hook (`hooks/beacon_action_hook.py`, hash-chained daily spool) and the Claude Code transcripts (`sources/claude_transcripts.py`, sealed prefixes so a rewritten transcript is a located finding). Graded as the agent's own account. Transcript capture is off unless the operator names a root with `BEACON_TRANSCRIPT_ROOT`; on a box where agents are persons, not tools, it stays off, and H18 records that as a boundary.
+- H19 vendor record, H20 OS-observed effects, H21 cloud credential activity: recorded as absent until a source is configured.
+- H22 action-pairing delta: derived set arithmetic over H18 (which calls each source saw, and whether their committed inputs agree).
+
+A2 now has a real source: the served model per turn from the API response field, next to the requested model.
+
+Content is never stored. Each prompt, tool input and tool output becomes `c1:sha256(nonce || bytes)`, with a per-item nonce derived from a per-deployment key in `<state>/actions/commit.key`. The org can open one item for an examiner (`reconstruct.py open`) without revealing the key or any other item; the examiner checks it with no key (`reconstruct.py timeline --openings`).
+
+Installing the hook changes the live harness, so it is an operator decision. To try it without touching user settings, pass a settings file to one session:
+
+    claude --settings hook-settings.json ...
+
+where hook-settings.json registers, for SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure and Stop, the command
+`BEACON_STATE=~/.beacon/agent ~/.beacon/venv/bin/python <repo>/hooks/beacon_action_hook.py`. The hook never blocks, never prints, and always exits 0.
+
+Tests: `~/.beacon/venv/bin/python test_agentmode.py` (includes the canonicalization stability gate over every sealed package on the machine: zero mismatches required).
