@@ -62,6 +62,15 @@ def verify(pkg, pkg_path, blobs, registry):
     return ok, buf.getvalue().strip()
 
 
+def sig_text(sig):
+    """Say exactly what the signature field supports. alg "none" is a declared absence, not a signature."""
+    if not isinstance(sig, dict) or sig.get("alg") in (None, "", "none"):
+        return "unsigned (declared): the hashes are intact, but who sealed it is not proven"
+    who = sig.get("collector_id") or "unknown collector"
+    fp = sig.get("key_fingerprint") or "?"
+    return "%s signature by %s (key %s); signature checked during verification" % (sig.get("alg"), who, fp)
+
+
 def header_html(pkg, ok, vlog):
     seal = pkg.get("seal", {}) or {}
     subj = pkg.get("subject", {}) or {}
@@ -80,7 +89,7 @@ def header_html(pkg, ok, vlog):
          "<b>Evidence items</b><span>%d</span>" % len(pkg.get("items", [])),
          "<b>Package fingerprint</b><span class=\"mono\">%s</span>" % e(seal.get("package_hash")),
          "<b>Hash algorithm</b><span>%s</span>" % e(seal.get("alg") or "sha256"),
-         "<b>Signature</b><span>%s</span>" % ("signed" if sig else "unsigned (declared)"),
+         "<b>Signature</b><span>%s</span>" % e(sig_text(sig)),
          "<b>Independent timestamp</b><span>%s</span>" % e(anchor_state),
          "<b>Collector</b><span>%s</span>" % e(" ".join(str(col.get(k, "")) for k in ("name", "version")).strip() or "not stated"),
          "</div>"]

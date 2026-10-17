@@ -11,6 +11,30 @@ Scoring is a separate layer (the open self-scorer, or CRC's verified rating). Th
 itself makes no judgment: it computes only freshness and completeness. See `SPEC.md` for the
 eight locked invariants and the version roadmap.
 
+## Install: as code or as a container
+
+Both give you the same `beacon` command.
+
+As code (Python 3.10 or later):
+
+```bash
+pip install git+https://github.com/Cairn-works/beacon-collector   # or: pip install . from a checkout
+beacon commands                         # every command, one line each
+beacon sbom collect --sbom bom.json     # seal some evidence
+beacon verify out-sbom/package.json     # check the seal
+beacon results out-sbom/package.json    # one-page HTML results: score, evidence, gaps, fingerprint
+```
+
+As a container:
+
+```bash
+docker run --rm -v "$PWD:/work" -w /work ghcr.io/cairn-works/beacon-collector results package.json
+```
+
+`docker run IMAGE <command> [args]` is `beacon <command> [args]`. With no command, the image
+dogfoods the host as described below. The `scan` command needs Trivy on the PATH; the container
+includes it, and pip users install it separately.
+
 ## Quick start (dogfood a box)
 
 Requires Docker. On the box:

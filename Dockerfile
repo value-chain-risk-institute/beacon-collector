@@ -33,8 +33,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY *.py /app/
 # TSA trust chain, so `anchor.py verify` works offline inside the image.
 COPY anchor-trust /app/anchor-trust
+# Data the scorer, results page, and adapters read beside the modules.
+COPY rubrics /app/rubrics
+COPY catalogs-ai /app/catalogs-ai
+COPY overlays /app/overlays
+COPY sources /app/sources
+COPY hooks /app/hooks
+COPY samples /app/samples
+COPY deploy /app/deploy
+COPY scorer-evidence-map-v0.json pyproject.toml README.md LICENSE /app/
 COPY dogfood.sh /app/dogfood.sh
 RUN chmod +x /app/dogfood.sh
+# Install the same package pip users get, so `beacon <command>` is identical in and
+# out of the container. Dependencies are already installed from requirements.txt above.
+RUN pip install --no-cache-dir --no-deps /app && beacon version
 
 # Least privilege: run as a non-root user. The host filesystem is mounted read-only
 # at /host (see docker-compose.yml); a non-root reader covers the vast majority of
@@ -50,5 +62,7 @@ ENV XDG_CACHE_HOME=/tmp/cache
 # Evidence output lands in /out (mount a volume there to keep the sealed package).
 VOLUME ["/out"]
 
-# Default: dogfood the box. Override the entrypoint for `verify`, `merge`, etc.
-ENTRYPOINT ["/app/dogfood.sh"]
+# `docker run IMAGE <command> [args]` runs `beacon <command>`, exactly as after pip install.
+# With no command it dogfoods the box, as before.
+ENTRYPOINT ["beacon"]
+CMD ["dogfood"]

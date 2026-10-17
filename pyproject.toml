@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beacon-collector"
+version = "0.8.0.dev0"
+description = "Collect evidence from the security tools you already run, seal it into a tamper-evident package, and score it against open rubrics. Runs on your machines."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "The Value Chain Risk Institute" }]
+dependencies = [
+    "cryptography>=42,<51",
+    "httpx>=0.27,<1",
+    "rfc3161-client>=1.0,<2",
+    "opentimestamps-client>=0.7,<1",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4"]
+
+[project.urls]
+Homepage = "https://valuechainrisk.org/beta/"
+
+[project.scripts]
+beacon = "beacon_collector.beaconcli:main"
+
+# The repository is a flat set of modules that import each other by bare name.
+# Installed, they live together in one package directory; beaconcli.py puts that
+# directory on sys.path, so `beacon <command>` runs each module exactly as the script.
+[tool.setuptools]
+package-dir = { "beacon_collector" = "." }
+packages = ["beacon_collector"]
+
+[tool.setuptools.package-data]
+beacon_collector = [
+    "*.json",
+    "dogfood.sh",
+    "rubrics/*.json",
+    "rubrics/*.md",
+    "anchor-trust/*",
+    "catalogs-ai/*.json",
+    "overlays/*",
+    "sources/*.py",
+    "hooks/*.py",
+    "samples/*.json",
+    "samples/adapters/*",
+    "deploy/*",
+]
+
+[tool.setuptools.exclude-package-data]
+beacon_collector = ["faked.json", "bundle.json"]

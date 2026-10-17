@@ -25,6 +25,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends openssl
       - name: python deps
         run: pip install -r requirements.txt
+      - name: pip install path (the `beacon` command, same as the container)
+        run: |
+          pip install .
+          cd /tmp && beacon version && beacon verify "$GITHUB_WORKSPACE/samples/sample-171-package.json"
       - name: compile every module
         run: python -m py_compile *.py
       - name: seal + merkle suite
@@ -75,6 +79,9 @@ jobs:
         run: |
           docker run --rm --entrypoint python beacon-collector:ci -c "import anchors, beaconlib, merkle; print('modules import; trust dir:', anchors.TRUST_DIR)"
           docker run --rm --entrypoint sh beacon-collector:ci -c "test -f /app/anchor-trust/freetsa-cacert.pem && which ots && openssl version"
+          docker run --rm beacon-collector:ci version
+          docker run --rm beacon-collector:ci verify /app/samples/sample-171-package.json
+          docker run --rm --entrypoint sh beacon-collector:ci -c "cd /tmp && beacon results /app/samples/sample-171-package.json --out /tmp/r.html && grep -q 'Package verified' /tmp/r.html"
       - name: image name (GHCR requires lowercase; the org is Cairn-works)
         if: startsWith(github.ref, 'refs/tags/v')
         id: img
