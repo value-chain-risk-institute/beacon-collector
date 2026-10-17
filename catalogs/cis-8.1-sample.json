@@ -1,0 +1,17 @@
+{
+  "id": "cis-8.1",
+  "version": "8.1",
+  "source": "sample subset for the ingester v0.1; real catalog will be fetched from VCRI as OSCAL",
+  "clauses": [
+    {"id": "1.1", "title": "Establish and Maintain Detailed Enterprise Asset Inventory",
+     "text": "Maintain an accurate and up-to-date inventory of all enterprise assets, including devices, servers, and endpoints, reviewed and updated on a recurring schedule."},
+    {"id": "6.3", "title": "Require MFA for Externally-Exposed Applications",
+     "text": "Require multi-factor authentication, MFA, for all externally exposed enterprise or third-party applications, including remote access and VPN."},
+    {"id": "7.1", "title": "Establish and Maintain a Vulnerability Management Process",
+     "text": "Establish and maintain a documented process to identify, assess, and remediate vulnerabilities on enterprise assets, reviewed on a recurring schedule."},
+    {"id": "8.2", "title": "Collect Audit Logs",
+     "text": "Collect audit logs from enterprise assets and retain them, ensuring logging is enabled across systems and applications to support detection and investigation."},
+    {"id": "11.2", "title": "Perform Automated Backups",
+     "text": "Perform automated backups of in-scope enterprise assets on a recurring schedule, and protect backup copies so they survive a ransomware or destructive event."}
+  ]
+}
