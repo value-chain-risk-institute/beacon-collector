@@ -1,13 +1,13 @@
-
 __pycache__/
-.DS_Store
-*-DECISION.md
-*-MVP-PLAN.md
-*.bak-*
-*.egg-info/
-*.log
-*.pre-*
 *.pyc
-# local backups and internal planning, never published
+.DS_Store
+*.log
+*.egg-info/
 build/
 out/
+
+# local backups and internal planning, never published
+*.bak-*
+*.pre-*
+*-DECISION.md
+*-MVP-PLAN.md
