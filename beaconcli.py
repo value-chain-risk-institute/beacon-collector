@@ -20,7 +20,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)  # the modules import each other by bare name
 
-VERSION = "0.8.0"
+VERSION = "0.8.1"
 CREDIT = "Beacon Collector by The Value Chain Risk Institute. Inside data, not guesses. https://valuechainrisk.org"
 
 # command -> (module, one-line description). Grouped by what a beta user does first.

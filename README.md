@@ -18,7 +18,7 @@ Both give you the same `beacon` command.
 As code (Python 3.10 or later):
 
 ```bash
-pip install git+https://github.com/value-chain-risk-institute/beacon-collector@v0.8.0   # or: pip install . from a checkout
+pip install git+https://github.com/value-chain-risk-institute/beacon-collector@v0.8.1   # or: pip install . from a checkout
 beacon commands                         # every command, one line each
 beacon sbom collect --sbom bom.json     # seal some evidence
 beacon verify out-sbom/package.json     # check the seal
@@ -28,7 +28,7 @@ beacon results out-sbom/package.json    # one-page HTML results: score, evidence
 As a container:
 
 ```bash
-docker run --rm -v "$PWD:/work" -w /work ghcr.io/value-chain-risk-institute/beacon-collector:v0.8.0 results package.json
+docker run --rm -v "$PWD:/work" -w /work ghcr.io/value-chain-risk-institute/beacon-collector:v0.8.1 results package.json
 ```
 
 `docker run IMAGE <command> [args]` is `beacon <command> [args]`. With no command, the image
