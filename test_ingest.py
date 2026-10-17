@@ -114,6 +114,166 @@ class EndToEnd(unittest.TestCase):
         self.assertTrue(ok, "sealed ingester package must verify")
 
 
+W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+
+def make_docx(path, paragraphs, table_rows=None, doctype=False):
+    """A minimal real .docx (zip + WordprocessingML), written by hand for the tests.
+    paragraphs: [(style_id or None, text)]; style ids map to names in styles.xml the
+    way Word writes them (Heading1 -> 'heading 1')."""
+    from xml.sax.saxutils import escape
+
+    def para(style, text):
+        ppr = '<w:pPr><w:pStyle w:val="%s"/></w:pPr>' % style if style else ""
+        runs = "".join('<w:r><w:t xml:space="preserve">%s</w:t></w:r>' % escape(t) for t in text.split("|"))
+        return "<w:p>%s%s</w:p>" % (ppr, runs)
+
+    body = "".join(para(s, t) for s, t in paragraphs)
+    if table_rows:
+        body += "<w:tbl>" + "".join("<w:tr>" + "".join("<w:tc>%s</w:tc>" % para(None, c) for c in row) + "</w:tr>"
+                                   for row in table_rows) + "</w:tbl>"
+    dt = '<!DOCTYPE x [<!ENTITY a "aaaa">]>' if doctype else ""
+    doc = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>%s<w:document xmlns:w="%s"><w:body>%s'
+           '</w:body></w:document>' % (dt, W_NS, body))
+    styles = ('<?xml version="1.0" encoding="UTF-8"?><w:styles xmlns:w="%s">'
+              '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/></w:style>'
+              '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/></w:style>'
+              '<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/></w:style>'
+              '<w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>' % W_NS)
+    ctypes = ('<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/'
+              'content-types"><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/'
+              'document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.'
+              'main+xml"/></Types>')
+    import zipfile
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", ctypes)
+        z.writestr("word/document.xml", doc)
+        z.writestr("word/styles.xml", styles)
+    return path
+
+
+def make_pdf(path, pages):
+    """A minimal real PDF (Helvetica text, one content stream per page), by hand.
+    pages: [[line, ...], ...]; an empty line leaves a blank line."""
+    objs = ["<< /Type /Catalog /Pages 2 0 R >>", None, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]
+    kids = []
+    for lines in pages:
+        ops = ["BT /F1 11 Tf 14 TL 72 740 Td"]
+        for ln in lines:
+            ops.append("(%s) Tj T*" % ln.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)"))
+        ops.append("ET")
+        stream = "\n".join(ops).encode("latin-1")
+        objs.append(b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream")
+        objs.append(None)
+        kids.append(len(objs))
+        objs[-1] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> "
+                    "/Contents %d 0 R >>" % (len(objs) - 1))
+    objs[1] = "<< /Type /Pages /Kids [%s] /Count %d >>" % (" ".join("%d 0 R" % k for k in kids), len(kids))
+    out = bytearray(b"%PDF-1.4\n")
+    offs = []
+    for i, o in enumerate(objs, 1):
+        offs.append(len(out))
+        body = o if isinstance(o, bytes) else o.encode("latin-1")
+        out += b"%d 0 obj\n" % i + body + b"\nendobj\n"
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objs) + 1)
+    for off in offs:
+        out += b"%010d 00000 n \n" % off
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objs) + 1, xref)
+    with open(path, "wb") as f:
+        f.write(bytes(out))
+    return path
+
+
+class Documents(unittest.TestCase):
+    def assert_offsets(self, doc):
+        for ch in doc["chunks"]:
+            self.assertEqual(doc["text"][ch["start"]:ch["end"]], ch["text"], "chunk offsets must address the text")
+
+    def test_markdown_sections_and_paragraphs(self):
+        doc = il.extract_document(DOC)
+        self.assertEqual(doc["kind"], "markdown")
+        self.assertEqual(doc["sha256"], file_sha(DOC))
+        self.assert_offsets(doc)
+        self.assertFalse(any(ch["text"].startswith("#") for ch in doc["chunks"]), "headings label, they are not spans")
+        bk = [ch for ch in doc["chunks"] if "Automated backups" in ch["text"]][0]
+        self.assertEqual(bk["section"], "Backups")
+        self.assertIsNone(bk["page"])
+        self.assertIn("Backups", il.location_text(doc, bk))
+        for ch in doc["chunks"]:
+            self.assertIn(ch["text"], POLICY_TEXT)
+
+    def test_text_file(self):
+        p = os.path.join(tempfile.mkdtemp(), "policy.txt")
+        open(p, "w").write("BACKUPS\n\nBackups run nightly and copies are kept offline.\n\nPasswords are never shared.\n")
+        doc = il.extract_document(p)
+        self.assertEqual(doc["kind"], "text")
+        self.assert_offsets(doc)
+        self.assertEqual([c["paragraph"] for c in doc["chunks"]], [1, 2])
+        self.assertEqual(doc["chunks"][0]["section"], "BACKUPS")
+
+    def test_docx_headings_paragraphs_tables(self):
+        p = make_docx(os.path.join(tempfile.mkdtemp(), "Policy.docx"), [
+            ("Title", "Security Policy"), ("Heading1", "Access"), (None, "Remote access |requires MFA."),
+            (None, ""), ("Heading2", "Backups"), (None, "Backups run nightly.")],
+            table_rows=[["Owner", "IT team reviews backups monthly."]])
+        doc = il.extract_document(p)
+        self.assertEqual(doc["kind"], "docx")
+        self.assert_offsets(doc)
+        texts = [c["text"] for c in doc["chunks"]]
+        self.assertIn("Remote access requires MFA.", texts, "runs join verbatim")
+        self.assertNotIn("Access", texts, "a heading is a section label, not a span")
+        mfa = [c for c in doc["chunks"] if "MFA" in c["text"]][0]
+        self.assertEqual(mfa["section"], "Access")
+        self.assertEqual(mfa["paragraph"], 3, "non-empty body paragraphs, headings included, 1-based")
+        tbl = [c for c in doc["chunks"] if "monthly" in c["text"]][0]
+        self.assertEqual(tbl["section"], "Backups")
+
+    def test_docx_with_dtd_refused(self):
+        p = make_docx(os.path.join(tempfile.mkdtemp(), "evil.docx"), [(None, "x")], doctype=True)
+        with self.assertRaises(il.DocumentError):
+            il.extract_document(p)
+
+    def test_not_a_docx(self):
+        p = os.path.join(tempfile.mkdtemp(), "fake.docx")
+        open(p, "wb").write(b"not a zip")
+        with self.assertRaises(il.DocumentError):
+            il.extract_document(p)
+
+    def test_unsupported_extension(self):
+        p = os.path.join(tempfile.mkdtemp(), "x.rtf")
+        open(p, "w").write("{\\rtf1}")
+        with self.assertRaises(il.DocumentError):
+            il.extract_document(p)
+
+    def test_pdf_pages(self):
+        p = make_pdf(os.path.join(tempfile.mkdtemp(), "policy.pdf"), [
+            ["Information Security Policy", "", "Asset inventory is reviewed quarterly."],
+            ["Backups", "", "Automated backups run nightly and copies are kept offline."]])
+        if not il.have_pypdf():
+            with self.assertRaises(il.DocumentError) as cm:
+                il.extract_document(p)
+            self.assertIn("pypdf", str(cm.exception))
+            self.skipTest("pypdf not installed; the clear-message path was checked instead")
+        doc = il.extract_document(p)
+        self.assertEqual(doc["kind"], "pdf")
+        self.assert_offsets(doc)
+        bk = [c for c in doc["chunks"] if "nightly" in c["text"]][0]
+        self.assertEqual(bk["page"], 2)
+        self.assertIn("p.2", il.location_text(doc, bk))
+
+    def test_pdf_without_pypdf_is_a_clear_message(self):
+        p = make_pdf(os.path.join(tempfile.mkdtemp(), "policy.pdf"), [["One line."]])
+        real = il.have_pypdf
+        il.have_pypdf = lambda: False
+        try:
+            with self.assertRaises(il.DocumentError) as cm:
+                il.extract_document(p)
+            self.assertIn("pip install", str(cm.exception))
+        finally:
+            il.have_pypdf = real
+
+
 class Catalogs(unittest.TestCase):
     def test_simple_format_still_loads(self):
         fw = il.load_framework(open(FW, "rb").read(), FW)

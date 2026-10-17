@@ -254,3 +254,234 @@ def fetch_framework(spec, home, expected_sha256=None, allow_http=False, catalog_
     fw = load_framework(raw, spec, framework_id=framework_id, catalog_dir=catalog_dir)
     fw["source"] = source
     return fw
+
+
+# ---------------------------------------------------------------- documents
+#
+# A document becomes {name, sha256, kind, text, chunks, extraction}. `text` is the
+# extracted text the reviewer's spans are checked against; every chunk is
+# text[start:end] exactly, so an excerpt is verbatim by construction and an edited
+# span is accepted only if it is a substring of `text`. For .md/.txt `text` is the
+# file itself (decoded); for .docx/.pdf it is the extracted paragraphs joined by
+# blank lines, and the sealed blob is the original file so anyone can re-extract.
+
+MAX_DOC_BYTES = 64 * 1024 * 1024
+W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+DOC_KINDS = {".md": "markdown", ".markdown": "markdown", ".txt": "text", ".docx": "docx", ".pdf": "pdf"}
+
+
+def have_pypdf():
+    try:
+        import pypdf  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _blocks(text):
+    """(start, end) of each blank-line-separated block, trimmed, in order."""
+    for m in re.finditer(r"\S(?:.*?)(?=\n[ \t]*\n|\Z)", text, re.S):
+        s, e = m.start(), m.end()
+        while e > s and text[e - 1].isspace():
+            e -= 1
+        yield s, e
+
+
+def _looks_like_heading(line):
+    line = line.strip()
+    return 0 < len(line) <= 80 and "\n" not in line and not re.search(r"[.;,]$", line) and len(line.split()) <= 10
+
+
+def _chunks_from_text(text, markdown):
+    chunks, section, para = [], None, 0
+    blocks = list(_blocks(text))
+    for i, (s, e) in enumerate(blocks):
+        block = text[s:e]
+        first, _, rest = block.partition("\n")
+        if markdown and re.match(r"#{1,6}\s", first):
+            section = re.sub(r"^#{1,6}\s+|\s+#*$", "", first).strip()
+            if not rest.strip():
+                continue
+            s = s + len(first) + 1 + (len(rest) - len(rest.lstrip()))
+            block = text[s:e]
+        elif not markdown and i + 1 < len(blocks) and _looks_like_heading(block):
+            section = block.strip()
+            continue
+        para += 1
+        chunks.append({"start": s, "end": e, "text": block, "section": section, "page": None, "paragraph": para})
+    return chunks
+
+
+def _docx_paragraphs(raw):
+    try:
+        z = zipfile.ZipFile(io.BytesIO(raw))
+    except zipfile.BadZipFile:
+        raise DocumentError("not a .docx (not a zip archive)")
+    names = set(z.namelist())
+    if "word/document.xml" not in names:
+        raise DocumentError("not a .docx (no word/document.xml)")
+
+    def part(name):
+        info = z.getinfo(name)
+        if info.file_size > MAX_DOC_BYTES:
+            raise DocumentError("%s expands to %d bytes; refusing" % (name, info.file_size))
+        data = z.read(name)
+        if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
+            # OOXML never carries a DTD; one here is an entity-expansion attempt
+            raise DocumentError("%s carries a DTD/entity declaration; refusing untrusted XML" % name)
+        try:
+            return ET.fromstring(data)
+        except ET.ParseError as e:
+            raise DocumentError("%s is not well-formed XML: %s" % (name, e))
+
+    style_names = {}
+    if "word/styles.xml" in names:
+        for st in part("word/styles.xml").iter(W + "style"):
+            nm = st.find(W + "name")
+            style_names[st.get(W + "styleId")] = (nm.get(W + "val") if nm is not None else "") or ""
+    body = part("word/document.xml").find(W + "body")
+    out = []
+    for p in body.iter(W + "p") if body is not None else []:
+        buf = []
+        for node in p.iter():
+            if node.tag == W + "t":
+                buf.append(node.text or "")
+            elif node.tag == W + "tab":
+                buf.append("\t")
+            elif node.tag in (W + "br", W + "cr"):
+                buf.append("\n")
+        text = "".join(buf).strip()
+        ppr = p.find(W + "pPr")
+        style = ""
+        heading = False
+        if ppr is not None:
+            ps = ppr.find(W + "pStyle")
+            if ps is not None:
+                sid = ps.get(W + "val") or ""
+                style = style_names.get(sid, sid)
+            heading = ppr.find(W + "outlineLvl") is not None
+        heading = heading or bool(re.match(r"^(heading\s*\d*|title|subtitle)$", style.strip().lower()))
+        if text:
+            out.append((text, heading))
+    return out
+
+
+def _pdf_pages(raw):
+    if not have_pypdf():
+        raise DocumentError("reading .pdf needs the optional pypdf package, which is not installed: "
+                            "pip install -r requirements-optional.txt (or pip install 'pypdf>=4'). "
+                            "Alternatively export the policy as .docx or .md and ingest that.")
+    import pypdf
+    try:
+        reader = pypdf.PdfReader(io.BytesIO(raw))
+        return [(pg.extract_text() or "") for pg in reader.pages]
+    except Exception as e:  # pypdf raises a zoo of types on malformed input
+        raise DocumentError("could not read the PDF: %s: %s" % (type(e).__name__, e))
+
+
+def _split_long(text, s, e, limit=700):
+    """A PDF page often arrives with no blank lines at all. Break an over-long block
+    at line ends that close a sentence, so a span is a paragraph, not a page."""
+    if e - s <= limit:
+        return [(s, e)]
+    out, start, pos = [], s, s
+    for m in re.finditer(r"[.!?:]\n", text[s:e]):
+        cut = s + m.start() + 1
+        if cut - start >= 200:
+            out.append((start, cut))
+            start = cut + 1
+        pos = cut
+    out.append((start, e))
+    return [(a, b) for a, b in out if text[a:b].strip()]
+
+
+def extract_document(path):
+    ext = os.path.splitext(path)[1].lower()
+    kind = DOC_KINDS.get(ext)
+    if not kind:
+        raise DocumentError("%s: unsupported type %r (supported: %s)" % (path, ext, ", ".join(sorted(DOC_KINDS))))
+    if not os.path.exists(path):
+        raise DocumentError("document not found: %s" % path)
+    if os.path.getsize(path) > MAX_DOC_BYTES:
+        raise DocumentError("%s is larger than %d bytes; refusing" % (path, MAX_DOC_BYTES))
+    raw = open(path, "rb").read()
+    if kind in ("markdown", "text"):
+        text = raw.decode("utf-8-sig", "replace")
+        chunks = _chunks_from_text(text, markdown=(kind == "markdown"))
+        method = "utf-8 text, blank-line paragraphs" + (", ATX headings as sections" if kind == "markdown" else
+                                                         ", short title-like lines as sections")
+    elif kind == "docx":
+        paras = _docx_paragraphs(raw)
+        pieces, chunks, section, pos = [], [], None, 0
+        for n, (ptext, heading) in enumerate(paras, 1):
+            if pieces:
+                pos += 2
+            start = pos
+            pieces.append(ptext)
+            pos += len(ptext)
+            if heading:
+                section = ptext
+                continue
+            chunks.append({"start": start, "end": pos, "text": ptext, "section": section, "page": None,
+                           "paragraph": n})
+        text = "\n\n".join(pieces)
+        method = "stdlib zipfile + WordprocessingML; paragraph = non-empty w:p in body order (tables included); " \
+                 "headings by style; .docx has no fixed pages"
+    else:
+        pages = _pdf_pages(raw)
+        text = ""
+        chunks = []
+        for pno, ptext in enumerate(pages, 1):
+            if text:
+                text += "\n\n"
+            base = len(text)
+            text += ptext
+            para = 0
+            for s, e in _blocks(ptext):
+                for a, b in _split_long(ptext, s, e):
+                    para += 1
+                    chunks.append({"start": base + a, "end": base + b, "text": ptext[a:b], "section": None,
+                                   "page": pno, "paragraph": para})
+        import pypdf
+        method = "pypdf %s extract_text per page; paragraph index is per page" % pypdf.__version__
+    if not chunks:
+        raise DocumentError("%s has no readable text (a scanned PDF needs OCR first)" % path)
+    for i, ch in enumerate(chunks, 1):
+        ch["index"] = i
+    return {"name": os.path.basename(path), "sha256": sha256(raw), "kind": kind, "raw": raw, "text": text,
+            "chunks": chunks, "extraction": {"method": method, "ingester": "0.2.0"}}
+
+
+def location(doc, chunk):
+    return {"doc": doc["name"], "doc_sha256": doc["sha256"], "page": chunk.get("page"),
+            "section": chunk.get("section"), "paragraph": chunk.get("paragraph"),
+            "chars": [chunk["start"], chunk["end"]]}
+
+
+def location_text(doc, chunk):
+    bits = [doc["name"]]
+    if chunk.get("page"):
+        bits.append("p.%d" % chunk["page"])
+    if chunk.get("section"):
+        bits.append("section '%s'" % chunk["section"])
+    bits.append("paragraph %d" % chunk["paragraph"])
+    return ", ".join(bits)
+
+
+def find_span(doc, span):
+    """Locate a reviewer's edited span. It must be a verbatim substring of the
+    extracted text; returns (start, end, containing chunk) or None."""
+    span = (span or "").replace("\r\n", "\n").strip()
+    if not span:
+        return None
+    at = doc["text"].find(span)
+    if at < 0:
+        return None
+    end = at + len(span)
+    host = None
+    for ch in doc["chunks"]:
+        if ch["start"] <= at < ch["end"] or (host is None and ch["start"] >= at):
+            host = ch
+            break
+    host = host or doc["chunks"][-1]
+    return at, end, host

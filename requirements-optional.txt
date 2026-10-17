@@ -1,0 +1,5 @@
+# Optional. The Collector runs without these; each one turns on one input type.
+# .pdf policy documents in the document ingester (ingestlib.extract_document).
+# Without it, a .pdf is refused with a message saying to install this or to
+# export the policy as .docx/.md. .md, .txt and .docx need nothing (stdlib).
+pypdf>=4,<7
