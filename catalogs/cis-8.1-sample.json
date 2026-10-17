@@ -1,7 +1,7 @@
 {
-  "id": "cis-8.1",
+  "id": "cis-8.1-sample",
   "version": "8.1",
-  "source": "sample subset for the ingester v0.1; real catalog will be fetched from VCRI as OSCAL",
+  "source": "hand-written SAMPLE subset for the ingester tests (titles follow the CIS safeguard names; the statement wording is paraphrased, not CIS text). The real CIS v8.1 catalog is the official OSCAL, fetched at run time: framework id cis-8.1 in catalogs/index.json",
   "clauses": [
     {"id": "1.1", "title": "Establish and Maintain Detailed Enterprise Asset Inventory",
      "text": "Maintain an accurate and up-to-date inventory of all enterprise assets, including devices, servers, and endpoints, reviewed and updated on a recurring schedule."},

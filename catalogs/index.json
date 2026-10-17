@@ -1,0 +1,24 @@
+{
+  "_schema": "vcri.beacon.framework-index/v0",
+  "_note": "Framework catalogs the ingester can map against, by id. Each entry is pinned by sha256: a catalog whose bytes differ from the pin is refused, so a changed upstream file is a deliberate re-pin, never a silent swap. 'path' = vendored in this directory; 'url' only = fetched at run time and cached under <home>/catalogs/. VCRI hosting framework/<id>/<version>.oscal.json is the target (DESIGN, 'Modularity'); until then the url is the publisher's. Provenance and licenses: SOURCE.md.",
+  "frameworks": {
+    "nist-csf-2.0": {
+      "title": "NIST Cybersecurity Framework 2.0 (OSCAL catalog)",
+      "path": "nist-csf-2.0.oscal.json",
+      "url": "https://raw.githubusercontent.com/usnistgov/oscal-content/78650f02ad9321bb7b817846f8fbd4f2bcd620de/nist.gov/CSF/v2.0/json/NIST_CSF_v2.0_catalog-min.json",
+      "sha256": "87d31e856ab2d2b5fb78d66233cc257a2e1a6c3c51b367ab73c10124b25adc3b"
+    },
+    "nist-sp800-171r3": {
+      "title": "NIST SP 800-171 Rev. 3 (OSCAL catalog)",
+      "path": "nist-sp800-171r3.oscal.json",
+      "url": "https://raw.githubusercontent.com/usnistgov/oscal-content/78650f02ad9321bb7b817846f8fbd4f2bcd620de/nist.gov/SP800-171/rev3/json/NIST_SP800-171_rev3_catalog-min.json",
+      "sha256": "940a3f6bb5bcf8e656aa673f071c1677ae45a3cd6bd7be62e8edc874d2410a2f"
+    },
+    "cis-8.1": {
+      "title": "CIS Critical Security Controls v8.1 (official CIS OSCAL catalog, 8.1.2)",
+      "url": "https://bitbucket.org/cis-it-workspace/cis-controls-v8.1_oscal/raw/c97fa0838bb20c435499ab2575e1410f5d304212/src/catalogs/json/cis-controls-v8.1_catalog.json",
+      "sha256": "577aa09d242fa03470af47f32c8ecd6de89318c48452911183d2ce863b486182",
+      "license_note": "CIS Terms of Use for Non-Member CIS Products (CC BY-NC-ND 4.0 for the Controls; no posting or derivative works). Not vendored: each user's Collector downloads it from CIS."
+    }
+  }
+}

@@ -36,6 +36,7 @@ import sys
 
 import adapterkit as ak
 import beaconlib as bl
+import ingestlib as il
 
 SLOT = "unmapped"  # a policy->clause pointer needs a framework->rubric crosswalk to
                    # reach a scorer slot; until that exists, score.py reports it as a gap.
@@ -84,28 +85,19 @@ def match_clause(clause, spans, span_tokens):
     return best, best_score
 
 
-def fetch_framework(spec):
-    """v0.1: load a framework catalog from a local file path. The seam for the next
-    piece: when `spec` is a framework id (e.g. 'cis-8.1'), fetch the published OSCAL
-    catalog from VCRI, record its hash, and normalize it to {id, version, clauses:
-    [{id, title, text}]}. For now we require a local --framework file."""
-    if not os.path.exists(spec):
-        sys.exit("framework catalog not found: %s (v0.1 needs a local file; VCRI OSCAL fetch is the next piece)" % spec)
-    raw = open(spec, "rb").read()
-    fw = json.loads(raw)
-    if not (fw.get("id") and isinstance(fw.get("clauses"), list)):
-        sys.exit("framework file must have {id, version, clauses:[{id,title,text}]}")
-    return fw, bl.sha256(raw)
-
-
 def collect(args):
+    args.doc = args.doc[0] if isinstance(args.doc, list) else args.doc
     if not os.path.exists(args.doc):
         sys.exit("document not found: %s" % args.doc)
     if os.path.splitext(args.doc)[1].lower() not in (".md", ".txt", ".markdown"):
         sys.exit("v0.1 ingests .md/.txt only (PDF/DOCX text-extraction is the next piece)")
     raw = open(args.doc, "rb").read()
     text = raw.decode("utf-8", "replace")
-    fw, fw_hash = fetch_framework(args.framework)
+    try:
+        fw = il.fetch_framework(args.framework, home=args.home, expected_sha256=args.framework_sha256)
+    except il.CatalogError as e:
+        sys.exit(str(e))
+    fw_hash = fw["catalog_sha256"]
 
     spans = chunk_document(text)
     if not spans:
@@ -177,7 +169,8 @@ if __name__ == "__main__":
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("collect")
     c.add_argument("--doc", required=True, help="policy document (.md/.txt)")
-    c.add_argument("--framework", required=True, help="framework catalog file {id,version,clauses}")
+    c.add_argument("--framework", required=True, help="framework id from catalogs/index.json, https URL, or file")
+    c.add_argument("--framework-sha256", help="pin the catalog bytes; a mismatch is refused")
     c.add_argument("--floor", type=float, default=0.2, help="confidence floor below which a clause is a gap")
     ak.add_common(c, "out-ingest")
     ak.add_verify(sub)
