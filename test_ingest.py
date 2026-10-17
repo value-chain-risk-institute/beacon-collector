@@ -54,14 +54,42 @@ def serve_dir(directory):
     return srv, "http://127.0.0.1:%d/" % srv.server_address[1]
 
 
-def run_collect(out_dir, floor=0.2):
-    args = argparse.Namespace(doc=[DOC], framework=FW, framework_sha256=None, floor=floor, subject="TestCo",
-                              matcher="keyword", crosswalk=None,
+def run_collect(out_dir, floor=0.2, matcher="keyword", docs=None, framework=FW):
+    args = argparse.Namespace(doc=docs or [DOC], framework=framework, framework_sha256=None, floor=floor,
+                              subject="TestCo", matcher=matcher, crosswalk=None,
                               box=None, sign=False, no_anchor=True,
                               home=os.path.join(out_dir, ".beacon"), out_dir=out_dir)
     im.collect(args)
     import json
     return json.load(open(os.path.join(out_dir, "package.json")))
+
+
+class EndToEndBM25(unittest.TestCase):
+    def test_v01_expectations_hold_on_bm25(self):
+        tmp = tempfile.mkdtemp()
+        pkg = run_collect(tmp, matcher="bm25")
+        dm = pkg["items"][0]["observation"]["document_mapping"]
+        self.assertEqual(dm["matcher"]["backend"], "local-bm25")
+        self.assertEqual({m["clause_id"] for m in dm["mappings"]}, {"1.1", "6.3", "8.2", "11.2"})
+        self.assertEqual([g["clause_id"] for g in dm["gaps"]], ["7.1"])
+        self.assertTrue(bl.verify_package(pkg, blob_dir=os.path.join(tmp, "blobs"), registry=None))
+
+    def test_multi_document_package(self):
+        tmp = tempfile.mkdtemp()
+        dx = make_docx(os.path.join(tmp, "Backup-Standard.docx"), [
+            ("Heading1", "Vulnerability management"),
+            (None, "A documented vulnerability management process identifies, assesses and remediates "
+                   "vulnerabilities on enterprise assets, reviewed every quarter.")])
+        pkg = run_collect(os.path.join(tmp, "out"), matcher="bm25", docs=[DOC, dx])
+        modes = [list(it["observation"])[0] for it in pkg["items"]]
+        self.assertEqual(modes, ["document_mapping", "document_mapping", "document_mapping_summary"])
+        self.assertEqual(pkg["items"][1]["source"]["raw_sha256"], file_sha(dx), "each document is its own sealed blob")
+        summary = pkg["items"][2]["observation"]["document_mapping_summary"]
+        self.assertEqual(summary["clauses_gap"], 0, "7.1 is covered by the second document")
+        m71 = [m for m in pkg["items"][1]["observation"]["document_mapping"]["mappings"] if m["clause_id"] == "7.1"][0]
+        self.assertEqual(m71["excerpt"]["location"]["section"], "Vulnerability management")
+        self.assertEqual(m71["source_doc"]["name"], "Backup-Standard.docx")
+        self.assertTrue(bl.verify_package(pkg, blob_dir=os.path.join(tmp, "out", "blobs"), registry=None))
 
 
 class Matcher(unittest.TestCase):
@@ -272,6 +300,88 @@ class Documents(unittest.TestCase):
             self.assertIn("pip install", str(cm.exception))
         finally:
             il.have_pypdf = real
+
+
+class Matching(unittest.TestCase):
+    def setUp(self):
+        self.doc = il.extract_document(DOC)
+        self.fw = il.load_framework(open(R3, "rb").read(), R3)
+
+    def test_bm25_ranks_the_right_paragraph(self):
+        be = il.get_backend("bm25")
+        be.index([(0, ch) for ch in self.doc["chunks"]])
+        mfa = [c for c in self.fw["clauses"] if c["id"] == "03.05.03"][0]
+        top = be.rank(mfa, k=3)
+        self.assertIn("multi-factor authentication", self.doc["chunks"][top[0][0]]["text"])
+        self.assertGreater(top[0][2], 0.0)
+        self.assertLessEqual(top[0][2], 1.0)
+        self.assertEqual(top, sorted(top, key=lambda r: -r[1]), "ranked by BM25 score")
+
+    def test_confidence_floor_routes_to_gaps(self):
+        props = il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.2)
+        by = {p["clause_id"]: p for p in props}
+        self.assertEqual(len(props), len(self.fw["clauses"]), "every clause gets a row: proposal or gap")
+        self.assertEqual(by["03.05.03"]["status"], "proposed")
+        self.assertIn("multi-factor", by["03.05.03"]["excerpt"]["text"])
+        self.assertEqual(by["03.13.11"]["status"], "below_floor", "cryptography is not in the sample policy")
+        strict = {p["clause_id"]: p for p in il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.99)}
+        self.assertEqual(strict["03.05.03"]["status"], "below_floor", "the floor is configurable")
+        for p in props:
+            if p["status"] == "proposed":
+                self.assertIn(p["excerpt"]["text"], POLICY_TEXT)
+                self.assertGreaterEqual(p["confidence"], 0.2)
+
+    def test_candidates_are_offered(self):
+        props = il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.2, k=3)
+        p = [p for p in props if p["clause_id"] == "03.05.03"][0]
+        self.assertGreaterEqual(len(p["candidates"]), 1)
+        self.assertLessEqual(len(p["candidates"]), 3)
+        self.assertEqual(p["candidates"][0]["chunk"], p["excerpt"]["chunk"])
+        scores = [c["score"] for c in p["candidates"]]
+        self.assertEqual(scores, sorted(scores, reverse=True))
+
+    def test_deterministic(self):
+        a = il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.2)
+        b = il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.2)
+        self.assertEqual(json.dumps(a, sort_keys=True), json.dumps(b, sort_keys=True))
+
+    def test_backends_are_pluggable_and_local_only(self):
+        self.assertIn("bm25", il.BACKENDS)
+        self.assertIn("keyword", il.BACKENDS)
+
+        class Cloud(il.MatcherBackend):
+            name, version, network = "cloud-test", "0", True
+        il.BACKENDS["cloud-test"] = Cloud
+        try:
+            with self.assertRaises(il.MatcherError):
+                il.get_backend("cloud-test")
+        finally:
+            del il.BACKENDS["cloud-test"]
+        with self.assertRaises(il.MatcherError):
+            il.get_backend("nope")
+
+    def test_matcher_makes_no_network_calls(self):
+        import socket
+        real = socket.socket.connect
+
+        def boom(*a, **k):
+            raise AssertionError("the matcher opened a network connection")
+        socket.socket.connect = boom
+        try:
+            il.propose(self.fw, [self.doc], il.get_backend("bm25"), floor=0.2)
+        finally:
+            socket.socket.connect = real
+
+    def test_multiple_documents(self):
+        p = make_docx(os.path.join(tempfile.mkdtemp(), "Crypto-Standard.docx"), [
+            ("Heading1", "Cryptography"),
+            (None, "Cryptographic mechanisms protecting CUI use FIPS-validated cryptography and approved modules.")])
+        docx = il.extract_document(p)
+        props = {x["clause_id"]: x for x in il.propose(self.fw, [self.doc, docx], il.get_backend("bm25"), floor=0.2)}
+        self.assertEqual(props["03.13.11"]["status"], "proposed")
+        self.assertEqual(props["03.13.11"]["excerpt"]["doc"], 1)
+        self.assertEqual(props["03.13.11"]["excerpt"]["location"]["section"], "Cryptography")
+        self.assertEqual(props["03.05.03"]["excerpt"]["doc"], 0)
 
 
 class Catalogs(unittest.TestCase):

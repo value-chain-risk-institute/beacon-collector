@@ -89,7 +89,11 @@ def _statement_text(parts, params):
         prose = _render_prose(part.get("prose"), params)
         if prose:
             label = _prop(part, "label") if depth else None
-            out.append((label + " " if label else "") + prose)
+            if label:
+                # 'SR-03.02.01.a.01' -> '1.': the printed form, not the machine id
+                last = re.split(r"[.\-]", label)[-1]
+                label = (last.lstrip("0") or "0") if last.isdigit() else last
+            out.append((label + ". " if label else "") + prose)
         for sp in part.get("parts", []) or []:
             if sp.get("name") in ("item", "statement"):
                 walk(sp, depth + 1)
@@ -485,3 +489,193 @@ def find_span(doc, span):
             break
     host = host or doc["chunks"][-1]
     return at, end, host
+
+
+# ---------------------------------------------------------------- matcher
+#
+# A backend ranks document chunks for one clause. It is the only piece meant to be
+# swapped (embeddings, an LLM picking the span) and it never touches packaging,
+# confirmation or sealing. Every backend declares `network`; the open build refuses
+# any backend that declares True, so "nothing about a document leaves the machine"
+# is enforced at selection time, not left to the backend's good manners.
+
+STOPWORDS = set("""a an the and or of to for in on at by with from as is are be been being this that these those
+it its their your our his her they you we i he she them us me my if then than so such not no nor only also any all
+each every both either neither which who whom whose what when where why how may might must shall should would could
+can will do does did done have has had having into over under between within without about against during before
+after above below up down out off per via use used using ensure ensured maintain maintained provide provided
+including include includes following organization organizational defined assignment selection enterprise""".split())
+TOKEN = re.compile(r"[a-z0-9]+")
+
+
+def stem(t):
+    """Crude, deterministic folding so 'backups'/'backup', 'logging'/'logs' and
+    'authentication'/'authenticated' meet: strip a plural or -ed/-ing ending (undoing
+    a doubled final consonant), then keep the first six letters. Not Porter; good
+    enough to rank, and a human confirms every span anyway."""
+    if t.isdigit():
+        return t
+    if t.endswith("ies") and len(t) > 4:
+        t = t[:-3] + "y"
+    elif t.endswith("s") and not t.endswith("ss") and len(t) > 3:
+        t = t[:-1]
+    for suf in ("ing", "ed"):
+        if t.endswith(suf) and len(t) - len(suf) >= 3:
+            t = t[: -len(suf)]
+            if len(t) > 3 and t[-1] == t[-2] and t[-1] not in "lsz":
+                t = t[:-1]
+            break
+    return t[:6]
+
+
+def tokens(text):
+    return [stem(t) for t in TOKEN.findall((text or "").lower()) if t not in STOPWORDS and len(t) > 2]
+
+
+def clause_query(clause):
+    """Clause text = title + statement prose, as (title, statement). The title is
+    dropped when it is only the id, as CSF subcategory titles are."""
+    title = clause.get("title", "")
+    return ("" if title == clause.get("id") else title), clause.get("text", "")
+
+
+class MatcherError(Exception):
+    pass
+
+
+class MatcherBackend:
+    """Interface. index() receives [(doc_position, chunk)]; rank() returns up to k
+    (position in that list, score, confidence 0..1), best first. Confidence is the
+    backend's own calibrated number for the confidence floor; it is not a probability
+    and not a judgment of the policy."""
+    name = "abstract"
+    version = "0"
+    network = False
+
+    def index(self, items):
+        self.items = list(items)
+
+    def rank(self, clause, k=3):
+        raise NotImplementedError
+
+
+class KeywordBackend(MatcherBackend):
+    """v0.1 baseline: recall of the clause's distinctive words inside the chunk."""
+    name, version = "local-keyword-overlap", "0.1.0"
+
+    def index(self, items):
+        super().index(items)
+        self.toks = [set(tokens(ch["text"])) for _, ch in self.items]
+
+    def rank(self, clause, k=3):
+        q = set(tokens(" ".join(clause_query(clause))))
+        if not q:
+            return []
+        scored = [(i, round(sum(1 for t in q if t in st) / len(q), 3)) for i, st in enumerate(self.toks)]
+        scored = [(i, s, s) for i, s in scored if s > 0]
+        scored.sort(key=lambda r: (-r[1], r[0]))
+        return scored[:k]
+
+
+class BM25Backend(MatcherBackend):
+    """Okapi BM25 over chunks (stdlib). Ranking is BM25. Confidence is 0..1 and
+    comparable across clauses (raw BM25 is neither): the mean of the IDF-weighted
+    share of the clause title's terms and of its statement's terms found in the
+    chunk. Terms the document never uses carry the maximum IDF, so a clause about
+    something the policy never mentions lands below the floor."""
+    name, version = "local-bm25", "0.2.0"
+    k1, b = 1.5, 0.75
+
+    def index(self, items):
+        super().index(items)
+        self.tf = []
+        self.df = {}
+        for _, ch in self.items:
+            toks = tokens(ch["text"])
+            counts = {}
+            for t in toks:
+                counts[t] = counts.get(t, 0) + 1
+            self.tf.append((counts, len(toks)))
+            for t in counts:
+                self.df[t] = self.df.get(t, 0) + 1
+        self.n = len(self.items)
+        self.avgdl = (sum(dl for _, dl in self.tf) / self.n) if self.n else 0.0
+
+    def idf(self, t):
+        df = self.df.get(t, 0)
+        return math.log((self.n - df + 0.5) / (df + 0.5) + 1.0)
+
+    def coverage(self, terms, counts):
+        """IDF-weighted share of `terms` present in a chunk, 0..1."""
+        if not terms:
+            return None
+        den = sum(self.idf(t) for t in terms)
+        return sum(self.idf(t) for t in terms if t in counts) / den if den else 0.0
+
+    def rank(self, clause, k=3):
+        title, text = clause_query(clause)
+        tq, sq = set(tokens(title)), set(tokens(text))
+        q = sorted(tq | sq)
+        if not q or not self.n:
+            return []
+        # title terms count twice in the BM25 query: a clause's title is its most
+        # distinctive vocabulary, its statement prose the most diluted
+        weight = {t: (2.0 if t in tq else 1.0) for t in q}
+        out = []
+        for i, (counts, dl) in enumerate(self.tf):
+            score = 0.0
+            for t in q:
+                f = counts.get(t)
+                if f:
+                    score += weight[t] * self.idf(t) * f * (self.k1 + 1) / (
+                        f + self.k1 * (1 - self.b + self.b * dl / (self.avgdl or 1)))
+            if score <= 0:
+                continue
+            # confidence: the mean of title coverage and statement coverage, so a
+            # long statement does not drown a span that plainly answers the title
+            parts = [c for c in (self.coverage(tq, counts), self.coverage(sq, counts)) if c is not None]
+            out.append((i, round(score, 4), round(sum(parts) / len(parts), 3)))
+        out.sort(key=lambda r: (-r[1], r[0]))
+        return out[:k]
+
+
+BACKENDS = {"bm25": BM25Backend, "keyword": KeywordBackend}
+
+
+def get_backend(name):
+    cls = BACKENDS.get(name)
+    if cls is None:
+        raise MatcherError("unknown matcher %r (have: %s)" % (name, ", ".join(sorted(BACKENDS))))
+    if cls.network:
+        raise MatcherError("matcher %r declares network access; the open VCRI Collector is local-only "
+                           "(a cloud backend belongs to the CRC build, on authorized documents)" % name)
+    return cls()
+
+
+def excerpt_record(docs, d, ch):
+    doc = docs[d]
+    return {"doc": d, "chunk": ch["index"], "text": ch["text"], "location": location(doc, ch),
+            "location_text": location_text(doc, ch)}
+
+
+def propose(fw, docs, backend, floor=0.2, k=3):
+    """One row per framework clause: the best verbatim chunk and up to k candidates,
+    status 'proposed' at or above the floor, 'below_floor' otherwise (a gap the
+    reviewer can still fill by hand). Deterministic for a given input."""
+    items = [(d, ch) for d, doc in enumerate(docs) for ch in doc["chunks"]]
+    backend.index(items)
+    rows = []
+    for clause in fw["clauses"]:
+        ranked = backend.rank(clause, k=k)
+        cands = [{"doc": items[i][0], "chunk": items[i][1]["index"], "score": s, "confidence": c}
+                 for i, s, c in ranked]
+        best = ranked[0] if ranked else None
+        conf = best[2] if best else 0.0
+        row = {"clause_id": clause["id"], "oscal_id": clause.get("oscal_id"), "clause_title": clause.get("title", ""),
+               "clause_text": clause.get("text", ""), "confidence": conf, "candidates": cands,
+               "status": "proposed" if best and conf >= floor else "below_floor", "excerpt": None}
+        if best:
+            d, ch = items[best[0]]
+            row["excerpt"] = excerpt_record(docs, d, ch)
+        rows.append(row)
+    return rows
